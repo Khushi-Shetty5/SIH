@@ -14,8 +14,40 @@ import { LabProvider, useLab } from "./context/LabContext";
 import { ToastProvider } from "./context/ToastContext";
 import ReportDetail from "./lab/ReportDetail";
 import PatientDetail from "./lab/PatientDetail";
+import DoctorNavigator from "./doctor/DoctorNavigator";
 
 const Stack = createNativeStackNavigator();
+
+function RoleSelectionScreen({ onSelectRole }) {
+  return (
+    <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 24, backgroundColor: "#f8f9fa" }}>
+      <Text style={{ fontSize: 22, fontWeight: "800", color: "#2E4053", marginBottom: 16 }}>Who are you?</Text>
+      <Text style={{ fontSize: 14, color: "#6c757d", marginBottom: 24 }}>Choose your role to continue</Text>
+      <TouchableOpacity
+        onPress={() => onSelectRole("lab")}
+        activeOpacity={0.9}
+        style={{ backgroundColor: "#2E86C1", paddingVertical: 14, paddingHorizontal: 22, borderRadius: 12, width: "100%", marginBottom: 12, alignItems: "center", shadowColor: "#000", shadowOpacity: 0.12, shadowRadius: 6, elevation: 4 }}
+      >
+        <Text style={{ color: "#fff", fontWeight: "700" }}>I am a Lab Worker</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        onPress={() => onSelectRole("doctor")}
+        activeOpacity={0.9}
+        style={{ backgroundColor: "#28A745", paddingVertical: 14, paddingHorizontal: 22, borderRadius: 12, width: "100%", alignItems: "center", shadowColor: "#000", shadowOpacity: 0.12, shadowRadius: 6, elevation: 4 }}
+      >
+        <Text style={{ color: "#fff", fontWeight: "700" }}>I am a Doctor</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+function DoctorScreen() {
+  return (
+    <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+      <Text style={{ fontSize: 20, fontWeight: "700", color: "#2E4053" }}>I am doctor</Text>
+    </View>
+  );
+}
 
 function HomeScreen({ navigation }) {
   const { labWorker, logout, patients, reports } = useLab();
@@ -122,29 +154,41 @@ function HomeScreen({ navigation }) {
 }
 
 export default function App() {
+  const [role, setRole] = React.useState(null);
+
   return (
     <ToastProvider>
-      <LabProvider>
-        <NavigationContainer>
-          <Stack.Navigator
-            screenOptions={{
-              headerStyle: { backgroundColor: "#2E86C1" },
-              headerTintColor: "#fff",
-              headerTitleStyle: { fontWeight: "bold" },
-              animation: "slide_from_right",
-              gestureEnabled: true,
-            }}
-          >
-            <Stack.Screen name="Home" component={HomeScreen} />
-            <Stack.Screen name="PatientSearch" component={PatientSearch} options={{ title: "Search Patient" }} />
-            <Stack.Screen name="AddPatient" component={AddPatient} options={{ title: "Add Patient" }} />
-            <Stack.Screen name="UploadReport" component={UploadReport} options={{ title: "Upload Report" }} />
-            <Stack.Screen name="PatientDetail" component={PatientDetail} options={{ title: "Patient Detail" }} />
-            <Stack.Screen name="ReportDetail" component={ReportDetail} options={{ title: "Report Detail" }} />
-            <Stack.Screen name="Profile" component={Profile} options={{ title: "Profile" }} />
-          </Stack.Navigator>
-        </NavigationContainer>
-      </LabProvider>
+      <NavigationContainer>
+        {role === null && (
+          <RoleSelectionScreen onSelectRole={setRole} />
+        )}
+
+        {role === "lab" && (
+          <LabProvider>
+            <Stack.Navigator
+              screenOptions={{
+                headerStyle: { backgroundColor: "#2E86C1" },
+                headerTintColor: "#fff",
+                headerTitleStyle: { fontWeight: "bold" },
+                animation: "slide_from_right",
+                gestureEnabled: true,
+              }}
+            >
+              <Stack.Screen name="Home" component={HomeScreen} />
+              <Stack.Screen name="PatientSearch" component={PatientSearch} options={{ title: "Search Patient" }} />
+              <Stack.Screen name="AddPatient" component={AddPatient} options={{ title: "Add Patient" }} />
+              <Stack.Screen name="UploadReport" component={UploadReport} options={{ title: "Upload Report" }} />
+              <Stack.Screen name="PatientDetail" component={PatientDetail} options={{ title: "Patient Detail" }} />
+              <Stack.Screen name="ReportDetail" component={ReportDetail} options={{ title: "Report Detail" }} />
+              <Stack.Screen name="Profile" component={Profile} options={{ title: "Profile" }} />
+            </Stack.Navigator>
+          </LabProvider>
+        )}
+
+        {role === "doctor" && (
+          <DoctorNavigator />
+        )}
+      </NavigationContainer>
     </ToastProvider>
   );
 }
