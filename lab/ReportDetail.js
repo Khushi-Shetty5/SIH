@@ -54,7 +54,7 @@ export default function ReportDetail({ route }) {
         </View>
       ) : (
         <TouchableOpacity style={styles.pdfBtn} onPress={openPdf}>
-          <MaterialIcons name="picture-as-pdf" size={20} color="#fff" />
+          <MaterialIcons name="description" size={20} color="#fff" />
           <Text style={styles.pdfText}> Open PDF</Text>
         </TouchableOpacity>
       )}

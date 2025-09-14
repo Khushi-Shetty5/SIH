@@ -236,6 +236,8 @@ export default function DoctorNavigator() {
         <Stack.Screen name="Emergency" component={require("./DoctorScreens").EmergencyScreen} options={{ title: "Emergency" }} />
         <Stack.Screen name="PatientList" component={require("./DoctorScreens").PatientList} options={{ title: "Patients" }} />
         <Stack.Screen name="PatientProfile" component={require("./DoctorScreens").PatientProfile} options={{ title: "Profile" }} />
+        <Stack.Screen name="AddPatient" component={require("./DoctorScreens").AddPatient} options={{ title: "Add Patient" }} />
+        <Stack.Screen name="ReportDetail" component={require("./DoctorScreens").ReportDetail} options={{ title: "Report Details" }} />
         <Stack.Screen name="LabReports" component={require("./DoctorScreens").LabReports} options={{ title: "Lab Reports" }} />
         <Stack.Screen name="Medicines" component={require("./DoctorScreens").Medicines} options={{ title: "Medicines" }} />
         <Stack.Screen name="Calendar" component={require("./DoctorScreens").Calendar} options={{ title: "Calendar" }} />

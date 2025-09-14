@@ -89,7 +89,7 @@ export default function UploadReport({ route }) {
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.pdfBtn} onPress={handlePickPdf}>
-        <MaterialIcons name="picture-as-pdf" size={22} color="#fff" />
+        <MaterialIcons name="description" size={22} color="#fff" />
         <Text style={styles.btnText}> Upload PDF</Text>
       </TouchableOpacity>
     </ScrollView>

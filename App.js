@@ -41,13 +41,7 @@ function RoleSelectionScreen({ onSelectRole }) {
   );
 }
 
-function DoctorScreen() {
-  return (
-    <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-      <Text style={{ fontSize: 20, fontWeight: "700", color: "#2E4053" }}>I am doctor</Text>
-    </View>
-  );
-}
+
 
 function HomeScreen({ navigation }) {
   const { labWorker, logout, patients, reports } = useLab();
