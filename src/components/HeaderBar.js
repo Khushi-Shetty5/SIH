@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { strings } from '../constants/strings';
+import translations from '../constants/strings';
 
 export default function HeaderBar({ navigation, showProfile = true }) {
   return (
@@ -10,13 +10,13 @@ export default function HeaderBar({ navigation, showProfile = true }) {
         <TouchableOpacity style={styles.menuButton}>
           <Icon name="menu" size={24} color="#333" />
         </TouchableOpacity>
-        <Text style={styles.title}>{strings.medkit}</Text>
+        <Text style={styles.title}>{translations.medkit}</Text>
       </View>
       
       <View style={styles.rightSection}>
         <TouchableOpacity style={styles.phoneButton}>
           <Icon name="call" size={20} color="#4A90E2" />
-          <Text style={styles.phoneText}>{strings.tollFree}</Text>
+          <Text style={styles.phoneText}>{translations.tollFree}</Text>
         </TouchableOpacity>
         
         {showProfile && (

@@ -1,64 +1,30 @@
-import React from 'react';
+// In App.js or AppNavigator.js:
+
 import { createStackNavigator } from '@react-navigation/stack';
-import DashboardScreen from './screens/DashboardScreen';
-import DoctorAvailabilityScreen from './screens/DoctorAvailabilityScreen';
-import AppointmentScreen from './screens/AppointmentScreen';
-import MedicineSearchScreen from './screens/MedicineSearchScreen';
-import VideoConsultationScreen from './screens/VideoConsultationScreen';
-import RecordsScreen from './screens/RecordsScreen';
-import SettingsScreen from './screens/SettingsScreen';
+// import RegisterScreen from './screens/RegisterScreen';
+import PharmacyNavigator from './PharmacyNavigator';
+import PatientNavigator from './PatientNavigator';
+import LoginScreen from './screens/Auth/LoginScreen';
+// ...other imports
 
 const Stack = createStackNavigator();
 
-export default function AppNavigator() {
+function AppNavigator() {
+  const { isAuthenticated, userRole } = {isAuthenticated: false, userRole: 'pharmacy'}; // Replace with actual auth logic
+
   return (
-    <Stack.Navigator
-      initialRouteName="Dashboard"
-      screenOptions={{
-        headerStyle: {
-          backgroundColor: '#4A90E2',
-        },
-        headerTintColor: '#fff',
-        headerTitleStyle: {
-          fontWeight: 'bold',
-        },
-      }}
-    >
-      <Stack.Screen 
-        name="Dashboard" 
-        component={DashboardScreen}
-        options={{ title: 'MedKit' }}
-      />
-      <Stack.Screen 
-        name="DoctorAvailability" 
-        component={DoctorAvailabilityScreen}
-        options={{ title: 'Doctor Availability' }}
-      />
-      <Stack.Screen 
-        name="Appointment" 
-        component={AppointmentScreen}
-        options={{ title: 'Book Appointment' }}
-      />
-      <Stack.Screen 
-        name="MedicineSearch" 
-        component={MedicineSearchScreen}
-        options={{ title: 'Search Medicine' }}
-      />
-      <Stack.Screen 
-        name="VideoConsultation" 
-        component={VideoConsultationScreen}
-        options={{ title: 'Video Conference' }}
-      />
-      <Stack.Screen 
-        name="Records" 
-        component={RecordsScreen}
-        options={{ title: 'View Records' }}
-      />
-      <Stack.Screen 
-        name="Settings" 
-        component={SettingsScreen}
-        options={{ title: 'Settings' }}
-      />
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      {!isAuthenticated ? (
+        <>
+          <Stack.Screen name="Login" component={LoginScreen} />
+          {/* <Stack.Screen name="Register" component={RegisterScreen} /> */}
+        </>
+      ) : userRole === 'pharmacy' ? (
+        <Stack.Screen name="Pharmacy" component={PharmacyNavigator} />
+      ) : (
+        <Stack.Screen name="Patient" component={PatientNavigator} />
+      )}
     </Stack.Navigator>
   );
 }
+export default AppNavigator;
