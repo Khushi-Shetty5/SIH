@@ -1,10 +1,21 @@
 import React, { useEffect, useMemo } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+} from "react-native";
 import * as Print from "expo-print";
 import * as Sharing from "expo-sharing";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { Ionicons, MaterialIcons, AntDesign, FontAwesome5 } from "@expo/vector-icons";
+import {
+  Ionicons,
+  MaterialIcons,
+  AntDesign,
+  FontAwesome5,
+} from "@expo/vector-icons";
 
 import PatientSearch from "./lab/PatientSearch";
 import UploadReport from "./lab/UploadReport";
@@ -15,25 +26,72 @@ import { ToastProvider } from "./context/ToastContext";
 import ReportDetail from "./lab/ReportDetail";
 import PatientDetail from "./lab/PatientDetail";
 import DoctorNavigator from "./doctor/DoctorNavigator";
+import VideoCallScreen from "./lab/VideoCallScreen";
+import NotificationsScreen from "./lab/Notifications";
+
 
 const Stack = createNativeStackNavigator();
 
 function RoleSelectionScreen({ onSelectRole }) {
   return (
-    <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 24, backgroundColor: "#f8f9fa" }}>
-      <Text style={{ fontSize: 22, fontWeight: "800", color: "#2E4053", marginBottom: 16 }}>Who are you?</Text>
-      <Text style={{ fontSize: 14, color: "#6c757d", marginBottom: 24 }}>Choose your role to continue</Text>
+    <View
+      style={{
+        flex: 1,
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 24,
+        backgroundColor: "#f8f9fa",
+      }}
+    >
+      <Text
+        style={{
+          fontSize: 22,
+          fontWeight: "800",
+          color: "#2E4053",
+          marginBottom: 16,
+        }}
+      >
+        Who are you?
+      </Text>
+      <Text style={{ fontSize: 14, color: "#6c757d", marginBottom: 24 }}>
+        Choose your role to continue
+      </Text>
       <TouchableOpacity
         onPress={() => onSelectRole("lab")}
         activeOpacity={0.9}
-        style={{ backgroundColor: "#2E86C1", paddingVertical: 14, paddingHorizontal: 22, borderRadius: 12, width: "100%", marginBottom: 12, alignItems: "center", shadowColor: "#000", shadowOpacity: 0.12, shadowRadius: 6, elevation: 4 }}
+        style={{
+          backgroundColor: "#2E86C1",
+          paddingVertical: 14,
+          paddingHorizontal: 22,
+          borderRadius: 12,
+          width: "100%",
+          marginBottom: 12,
+          alignItems: "center",
+          shadowColor: "#000",
+          shadowOpacity: 0.12,
+          shadowRadius: 6,
+          elevation: 4,
+        }}
       >
-        <Text style={{ color: "#fff", fontWeight: "700" }}>I am a Lab Worker</Text>
+        <Text style={{ color: "#fff", fontWeight: "700" }}>
+          I am a Lab Worker
+        </Text>
       </TouchableOpacity>
       <TouchableOpacity
         onPress={() => onSelectRole("doctor")}
         activeOpacity={0.9}
-        style={{ backgroundColor: "#28A745", paddingVertical: 14, paddingHorizontal: 22, borderRadius: 12, width: "100%", alignItems: "center", shadowColor: "#000", shadowOpacity: 0.12, shadowRadius: 6, elevation: 4 }}
+        style={{
+          backgroundColor: "#28A745",
+          paddingVertical: 14,
+          paddingHorizontal: 22,
+          borderRadius: 12,
+          width: "100%",
+          alignItems: "center",
+          shadowColor: "#000",
+          shadowOpacity: 0.12,
+          shadowRadius: 6,
+          elevation: 4,
+        }}
       >
         <Text style={{ color: "#fff", fontWeight: "700" }}>I am a Doctor</Text>
       </TouchableOpacity>
@@ -44,7 +102,9 @@ function RoleSelectionScreen({ onSelectRole }) {
 function DoctorScreen() {
   return (
     <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-      <Text style={{ fontSize: 20, fontWeight: "700", color: "#2E4053" }}>I am doctor</Text>
+      <Text style={{ fontSize: 20, fontWeight: "700", color: "#2E4053" }}>
+        I am doctor
+      </Text>
     </View>
   );
 }
@@ -57,16 +117,26 @@ function HomeScreen({ navigation }) {
       title: "MedKit",
       headerLeft: () => null,
       headerRight: () => (
-        <HeaderAvatarMenu onProfile={() => navigation.navigate("Profile")} onLogout={logout} />
+        <HeaderAvatarMenu
+          onProfile={() => navigation.navigate("Profile")}
+          onLogout={logout}
+        />
       ),
     });
   }, [navigation, logout]);
 
   return (
-    <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
+    <ScrollView
+      contentContainerStyle={styles.container}
+      showsVerticalScrollIndicator={false}
+    >
       <View style={styles.headerCard}>
-        <Text style={styles.headerTitle}>Welcome, {labWorker?.name || "Lab Worker"}</Text>
-        <Text style={styles.headerSubtitle}>Have a productive day in the lab</Text>
+        <Text style={styles.headerTitle}>
+          Welcome, {labWorker?.name || "Lab Worker"}
+        </Text>
+        <Text style={styles.headerSubtitle}>
+          Have a productive day in the lab
+        </Text>
       </View>
 
       <View style={styles.statsRow}>
@@ -113,36 +183,53 @@ function HomeScreen({ navigation }) {
 
       <Text style={homeStyles.recentHeader}>Recent Reports</Text>
       {useMemo(() => {
-        const sorted = (reports || []).slice().sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        const sorted = (reports || [])
+          .slice()
+          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         return sorted.slice(0, 4);
       }, [reports]).map((r) => {
         const patient = patients?.find((p) => p.id === r.patientId);
         return (
           <View key={r.id} style={homeStyles.recentItem}>
-            <TouchableOpacity style={{ flex: 1 }} onPress={() => navigation.navigate("ReportDetail", { report: r })}>
-              <Text style={homeStyles.recentTitle}>{patient?.name || "Unknown Patient"} ({r.patientId})</Text>
-              <Text style={homeStyles.recentMeta}>{r.title} {r.type === "pdf" ? "(PDF)" : ""} • {new Date(r.createdAt).toLocaleString()}</Text>
+            <TouchableOpacity
+              style={{ flex: 1 }}
+              onPress={() => navigation.navigate("ReportDetail", { report: r })}
+            >
+              <Text style={homeStyles.recentTitle}>
+                {patient?.name || "Unknown Patient"} ({r.patientId})
+              </Text>
+              <Text style={homeStyles.recentMeta}>
+                {r.title} {r.type === "pdf" ? "(PDF)" : ""} •{" "}
+                {new Date(r.createdAt).toLocaleString()}
+              </Text>
             </TouchableOpacity>
-            <TouchableOpacity style={homeStyles.iconBtn} onPress={async () => {
-              try {
-                if (r.type === "pdf" && r.fileUri) {
-                  await Sharing.shareAsync(r.fileUri);
-                } else {
-                  const html = `
+            <TouchableOpacity
+              style={homeStyles.iconBtn}
+              onPress={async () => {
+                try {
+                  if (r.type === "pdf" && r.fileUri) {
+                    await Sharing.shareAsync(r.fileUri);
+                  } else {
+                    const html = `
                     <html><head><meta name='viewport' content='width=device-width, initial-scale=1.0'></head>
                     <body style='font-family: -apple-system, Roboto, Arial; padding: 24px;'>
                       <h2>${r.title}</h2>
                       <p><b>Patient ID:</b> ${r.patientId}</p>
                       <p><b>Uploaded by:</b> ${r.uploadedByName}</p>
-                      <p><b>Date:</b> ${new Date(r.createdAt).toLocaleString()}</p>
+                      <p><b>Date:</b> ${new Date(
+                        r.createdAt
+                      ).toLocaleString()}</p>
                       <hr/>
-                      <pre style='white-space: pre-wrap; font-size: 14px;'>${r.content || ""}</pre>
+                      <pre style='white-space: pre-wrap; font-size: 14px;'>${
+                        r.content || ""
+                      }</pre>
                     </body></html>`;
-                  const { uri } = await Print.printToFileAsync({ html });
-                  await Sharing.shareAsync(uri);
-                }
-              } catch (e) {}
-            }}>
+                    const { uri } = await Print.printToFileAsync({ html });
+                    await Sharing.shareAsync(uri);
+                  }
+                } catch (e) {}
+              }}
+            >
               <MaterialIcons name="download" size={20} color="#2E86C1" />
             </TouchableOpacity>
             <Ionicons name="chevron-forward" size={18} color="#6c757d" />
@@ -159,9 +246,7 @@ export default function App() {
   return (
     <ToastProvider>
       <NavigationContainer>
-        {role === null && (
-          <RoleSelectionScreen onSelectRole={setRole} />
-        )}
+        {role === null && <RoleSelectionScreen onSelectRole={setRole} />}
 
         {role === "lab" && (
           <LabProvider>
@@ -175,19 +260,58 @@ export default function App() {
               }}
             >
               <Stack.Screen name="Home" component={HomeScreen} />
-              <Stack.Screen name="PatientSearch" component={PatientSearch} options={{ title: "Search Patient" }} />
-              <Stack.Screen name="AddPatient" component={AddPatient} options={{ title: "Add Patient" }} />
-              <Stack.Screen name="UploadReport" component={UploadReport} options={{ title: "Upload Report" }} />
-              <Stack.Screen name="PatientDetail" component={PatientDetail} options={{ title: "Patient Detail" }} />
-              <Stack.Screen name="ReportDetail" component={ReportDetail} options={{ title: "Report Detail" }} />
-              <Stack.Screen name="Profile" component={Profile} options={{ title: "Profile" }} />
+              <Stack.Screen
+                name="PatientSearch"
+                component={PatientSearch}
+                options={{ title: "Search Patient" }}
+              />
+              <Stack.Screen
+                name="AddPatient"
+                component={AddPatient}
+                options={{ title: "Add Patient" }}
+              />
+              <Stack.Screen
+                name="UploadReport"
+                component={UploadReport}
+                options={{ title: "Upload Report" }}
+              />
+              <Stack.Screen
+                name="PatientDetail"
+                component={PatientDetail}
+                options={{ title: "Patient Detail" }}
+              />
+              <Stack.Screen
+                name="ReportDetail"
+                component={ReportDetail}
+                options={{ title: "Report Detail" }}
+              />
+              <Stack.Screen
+                name="Profile"
+                component={Profile}
+                options={{ title: "Profile" }}
+              />
+
+              {/* ✅ New Screen */}
+              <Stack.Screen
+               name="Notifications" 
+               component={NotificationsScreen} 
+               options={{ title: "Notifications" }}
+               />
+               <Stack.Screen
+                name="VideoCallRequests"
+                component={VideoCallRequestsScreen} 
+                options={{ title: "Video Call Requests" }}
+              />
+              <Stack.Screen
+                name="VideoCallScreen"
+                component={VideoCallScreen}
+                options={{ title: "Emergency Video Call" }}
+              />
             </Stack.Navigator>
           </LabProvider>
         )}
 
-        {role === "doctor" && (
-          <DoctorNavigator />
-        )}
+        {role === "doctor" && <DoctorNavigator />}
       </NavigationContainer>
     </ToastProvider>
   );
@@ -265,7 +389,11 @@ const styles = StyleSheet.create({
 
 function ActionTile({ color, icon, title, subtitle, onPress }) {
   return (
-    <TouchableOpacity onPress={onPress} activeOpacity={0.9} style={[tileStyles.tile, { backgroundColor: color }]}>
+    <TouchableOpacity
+      onPress={onPress}
+      activeOpacity={0.9}
+      style={[tileStyles.tile, { backgroundColor: color }]}
+    >
       <View style={tileStyles.decor} />
       <View style={tileStyles.left}>
         <View style={tileStyles.iconCircle}>{icon}</View>
@@ -326,7 +454,12 @@ const tileStyles = StyleSheet.create({
 });
 
 const homeStyles = StyleSheet.create({
-  recentHeader: { marginTop: 12, marginBottom: 8, fontWeight: "700", color: "#2E4053" },
+  recentHeader: {
+    marginTop: 12,
+    marginBottom: 8,
+    fontWeight: "700",
+    color: "#2E4053",
+  },
   recentItem: {
     backgroundColor: "#fff",
     borderWidth: 1,
@@ -359,11 +492,23 @@ function HeaderAvatarMenu({ onProfile, onLogout }) {
       </TouchableOpacity>
       {open && (
         <View style={menuStyles.menu}>
-          <TouchableOpacity style={menuStyles.item} onPress={() => { setOpen(false); onProfile?.(); }}>
+          <TouchableOpacity
+            style={menuStyles.item}
+            onPress={() => {
+              setOpen(false);
+              onProfile?.();
+            }}
+          >
             <AntDesign name="idcard" size={16} color="#2E86C1" />
             <Text style={menuStyles.text}>See Profile</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={menuStyles.item} onPress={() => { setOpen(false); onLogout?.(); }}>
+          <TouchableOpacity
+            style={menuStyles.item}
+            onPress={() => {
+              setOpen(false);
+              onLogout?.();
+            }}
+          >
             <AntDesign name="logout" size={16} color="#dc3545" />
             <Text style={[menuStyles.text, { color: "#dc3545" }]}>Logout</Text>
           </TouchableOpacity>

@@ -45,7 +45,7 @@ export function useToast() {
 const styles = StyleSheet.create({
   toast: {
     position: "absolute",
-    bottom: 20,
+    top: 40, // move from bottom to top
     alignSelf: "center",
     paddingVertical: 10,
     paddingHorizontal: 16,
@@ -60,4 +60,5 @@ const styles = StyleSheet.create({
   success: { backgroundColor: "#28A745" },
   danger: { backgroundColor: "#dc3545" },
 });
+
 

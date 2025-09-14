@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, TextInput } from "react-nativ
 import { useDoctor } from "../context/DoctorContext";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 
+
 export function EmergencyScreen() {
   const { emergencies, attendEmergency } = useDoctor();
   return (
@@ -169,6 +170,70 @@ export function DoctorProfile() {
   );
 }
 
+export function VideoCallRequests({ navigation }) {
+  const { videoCalls, attendVideoCall } = useDoctor();
+
+  // Pending calls = not yet attended
+  const pendingCalls = videoCalls.filter(v => !v.attendedBy);
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.header}>Pending Video Calls</Text>
+      {pendingCalls.length === 0 ? (
+        <Text style={{ color: "#6c757d", marginTop: 8 }}>No pending calls.</Text>
+      ) : (
+        pendingCalls.map(call => (
+          <View key={call.id} style={styles.row}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.itemTitle}>{call.title || "Video Call Request"}</Text>
+              <Text style={styles.itemSub}>Patient: {call.patientName || call.patientId}</Text>
+              <Text style={styles.itemSub}>Requested: {new Date(call.time).toLocaleTimeString()}</Text>
+            </View>
+            <TouchableOpacity
+              style={[styles.btn, styles.btnPrimary]}
+              onPress={() => {
+                attendVideoCall(call.id); // mark as attended
+                const roomId = `VideoCall-${call.id}`;
+                navigation.navigate("VideoCallScreen", { roomId });
+              }}
+            >
+              <Text style={styles.btnText}>Join</Text>
+            </TouchableOpacity>
+          </View>
+        ))
+      )}
+    </View>
+  );
+}
+
+// ---------------- LabReports Badge Example ----------------
+export function LabReportsWithBadge() {
+  const { reports, approveReport } = useDoctor();
+  const newReportsCount = reports.filter(r => r.status === "new").length;
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.header}>Lab Reports {newReportsCount > 0 && `(${newReportsCount} new)`}</Text>
+      {reports.map(r => (
+        <View key={r.id} style={styles.row}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.itemTitle}>{r.title}</Text>
+            <Text style={styles.itemSub}>
+              {r.status} • {new Date(r.createdAt).toLocaleDateString()}
+            </Text>
+          </View>
+          <TouchableOpacity
+            style={[styles.btn, r.status === "approved" ? styles.btnSecondary : styles.btnPrimary]}
+            onPress={() => r.status !== "approved" && approveReport(r.id)}
+          >
+            <Text style={styles.btnText}>{r.status === "approved" ? "Approved" : "Approve"}</Text>
+          </TouchableOpacity>
+        </View>
+      ))}
+    </View>
+  );
+}
+
 function Card({ children }) {
   return (
     <View style={styles.card}>{children}</View>
@@ -196,6 +261,45 @@ function Button({ text, onPress, color, type }) {
   );
 }
 
+// const styles = StyleSheet.create({
+//   container: { flex: 1, backgroundColor: "#f8f9fa", padding: 16 },
+//   header: { fontSize: 20, fontWeight: "800", color: "#2E4053", marginBottom: 10 },
+//   subHeader: { marginTop: 14, marginBottom: 8, fontWeight: "700", color: "#2E4053" },
+//   card: {
+//     backgroundColor: "#fff",
+//     borderRadius: 12,
+//     borderWidth: 1,
+//     borderColor: "#e9ecef",
+//     padding: 12,
+//     shadowColor: "#000",
+//     shadowOpacity: 0.05,
+//     shadowRadius: 4,
+//     elevation: 1,
+//     marginBottom: 12,
+//   },
+//   row: { flexDirection: "row", alignItems: "center", paddingVertical: 8 },
+//   itemTitle: { color: "#2E4053", fontWeight: "700" },
+//   itemSub: { color: "#6c757d", marginTop: 4, fontSize: 12 },
+//   btn: { paddingVertical: 8, paddingHorizontal: 12, borderRadius: 8 },
+//   btnPrimary: { backgroundColor: "#2E86C1" },
+//   btnSecondary: { backgroundColor: "#e8f1f9", borderWidth: 1, borderColor: "#cfe3f5" },
+//   btnText: { color: "#fff", fontWeight: "700" },
+//   searchRow: {
+//     flexDirection: "row",
+//     alignItems: "center",
+//     backgroundColor: "#fff",
+//     borderRadius: 10,
+//     borderWidth: 1,
+//     borderColor: "#e9ecef",
+//     paddingHorizontal: 10,
+//     paddingVertical: 8,
+//     marginBottom: 10,
+//   },
+//   input: { marginLeft: 8, flex: 1 },
+//   note: { color: "#6c757d", fontSize: 12, marginTop: 8 },
+// });
+
+
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#f8f9fa", padding: 16 },
   header: { fontSize: 20, fontWeight: "800", color: "#2E4053", marginBottom: 10 },
@@ -212,7 +316,7 @@ const styles = StyleSheet.create({
     elevation: 1,
     marginBottom: 12,
   },
-  row: { flexDirection: "row", alignItems: "center", paddingVertical: 8 },
+  row: { flexDirection: "row", alignItems: "center", paddingVertical: 8, marginBottom: 8, backgroundColor: "#fff", borderRadius: 10, paddingHorizontal: 12, shadowColor: "#000", shadowOpacity: 0.05, shadowRadius: 4, elevation: 1 },
   itemTitle: { color: "#2E4053", fontWeight: "700" },
   itemSub: { color: "#6c757d", marginTop: 4, fontSize: 12 },
   btn: { paddingVertical: 8, paddingHorizontal: 12, borderRadius: 8 },
@@ -232,6 +336,19 @@ const styles = StyleSheet.create({
   },
   input: { marginLeft: 8, flex: 1 },
   note: { color: "#6c757d", fontSize: 12, marginTop: 8 },
+
+  // New styles for badges / VideoCallRequests
+  badge: {
+    position: "absolute",
+    top: -6,
+    right: -6,
+    backgroundColor: "#dc3545",
+    borderRadius: 8,
+    paddingHorizontal: 5,
+    minWidth: 16,
+    height: 16,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  badgeText: { color: "#fff", fontSize: 10, fontWeight: "700" },
 });
-
-
