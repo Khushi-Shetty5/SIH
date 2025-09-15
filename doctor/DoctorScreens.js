@@ -12,94 +12,10 @@ import * as WebBrowser from "expo-web-browser";
 
 // Import and re-export Calendar component
 import { Calendar } from "../context/Calendar";
-export { Calendar };
+import EmergencyScreen from "./emergencies";
+export { Calendar, EmergencyScreen };
 
-export function EmergencyScreen() {
-  const { emergencies, attendEmergency } = useDoctor();
-  
-  const handleAttendEmergency = (emergency) => {
-    Alert.alert(
-      'Attend Emergency',
-      `Attend to ${emergency.title}?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Attend Now',
-          onPress: () => {
-            attendEmergency(emergency.id);
-            Alert.alert(
-              'Emergency Attended',
-              `You are now attending to: ${emergency.title}`,
-              [
-                {
-                  text: 'Call Patient',
-                  onPress: () => {
-                    // Extract patient info and call
-                    Alert.alert('Calling...', 'Connecting to emergency contact.');
-                  }
-                },
-                { text: 'OK' }
-              ]
-            );
-          }
-        }
-      ]
-    );
-  };
-  
-  return (
-    <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <Text style={styles.header}>Current Emergencies</Text>
-        
-        {emergencies.length === 0 ? (
-          <Card>
-            <View style={styles.emptyStateSmall}>
-              <MaterialIcons name="local-hospital" size={48} color="#28A745" />
-              <Text style={styles.emptyText}>No Active Emergencies</Text>
-              <Text style={styles.emptySubText}>All emergency cases have been handled</Text>
-            </View>
-          </Card>
-        ) : (
-          <Card>
-            {emergencies.map((e) => (
-              <View key={e.id} style={styles.emergencyItem}>
-                <View style={styles.emergencyInfo}>
-                  <View style={[styles.priorityIndicator, { 
-                    backgroundColor: e.priority === 'high' ? '#dc3545' : 
-                                   e.priority === 'medium' ? '#ffc107' : '#28a745' 
-                  }]} />
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.itemTitle}>{e.title}</Text>
-                    <Text style={styles.itemSub}>
-                      {Math.round((Date.now() - e.time) / 60000)} min ago • Priority: {e.priority.toUpperCase()}
-                      {e.attendingBy && ` • Attending`}
-                    </Text>
-                  </View>
-                </View>
-                <TouchableOpacity
-                  style={[
-                    styles.btn,
-                    e.attendingBy ? styles.btnSecondary : styles.btnPrimary,
-                    { backgroundColor: e.attendingBy ? '#6c757d' : '#dc3545' }
-                  ]}
-                  onPress={() => !e.attendingBy && handleAttendEmergency(e)}
-                  disabled={!!e.attendingBy}
-                >
-                  <Text style={styles.btnText}>
-                    {e.attendingBy ? "Attending" : "Attend"}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            ))}
-          </Card>
-        )}
-        
-        <Text style={styles.note}>Emergency notifications are updated in real-time</Text>
-      </ScrollView>
-    </View>
-  );
-}
+
 
 export function PatientList({ navigation }) {
   const [q, setQ] = React.useState("");

@@ -145,15 +145,7 @@ function MedicinesScreen() {
   );
 }
 
-// 6) Emergency Handling
-function EmergencyScreen() {
-  return (
-    <ScreenContainer title="Emergency">
-      <ListItem title="Chest pain - John Doe" subtitle="2 min ago • Ward A" right={<Tag text="Attending" color="#dc3545" />} />
-      <ListItem title="Severe allergy - Mary P." subtitle="8 min ago • Ward C" right={<Tag text="Attend" color="#dc3545" />} />
-    </ScreenContainer>
-  );
-}
+
 
 // 7) Notifications
 function NotificationsScreen() {
@@ -233,12 +225,13 @@ export default function DoctorNavigator() {
     <DoctorProvider>
       <Stack.Navigator>
         <Stack.Screen name="DoctorHome" component={require("./DoctorHomeScreen").default} options={{ headerShown: true }} />
-        <Stack.Screen name="Emergency" component={require("./DoctorScreens").EmergencyScreen} options={{ title: "Emergency" }} />
+        <Stack.Screen name="Emergency" component={require("./DoctorScreens").EmergencyScreen} options={{ title: "Emergency Cases", headerStyle: { backgroundColor: "#FF4757" }, headerTintColor: "#fff" }} />
         <Stack.Screen name="PatientList" component={require("./DoctorScreens").PatientList} options={{ title: "Patients" }} />
         <Stack.Screen name="PatientProfile" component={require("./DoctorScreens").PatientProfile} options={{ title: "Profile" }} />
         <Stack.Screen name="AddPatient" component={require("./DoctorScreens").AddPatient} options={{ title: "Add Patient" }} />
         <Stack.Screen name="ReportDetail" component={require("./DoctorScreens").ReportDetail} options={{ title: "Report Details" }} />
-        <Stack.Screen name="LabReports" component={require("./DoctorScreens").LabReports} options={{ title: "Lab Reports" }} />
+        <Stack.Screen name="LabReports" component={require("./LabReports").LabRecordsScreen} options={{ title: "Lab Records" }} />
+        <Stack.Screen name="PatientReports" component={require("./LabReports").PatientReportsScreen} options={{ title: "Patient Reports" }} />
         <Stack.Screen name="Medicines" component={require("./DoctorScreens").Medicines} options={{ title: "Medicines" }} />
         <Stack.Screen name="Calendar" component={require("./DoctorScreens").Calendar} options={{ title: "Calendar" }} />
         <Stack.Screen name="DoctorProfile" component={require("./DoctorScreens").DoctorProfile} options={{ title: "Profile" }} />
