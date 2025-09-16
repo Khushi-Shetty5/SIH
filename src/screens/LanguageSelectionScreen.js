@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, Dimensions } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, Dimensions, Alert, Switch } from 'react-native';
+import * as Speech from 'expo-speech';
+import { Ionicons } from '@expo/vector-icons';
+import { useLanguage } from '../languageConstants';
 
 const languages = [
   { name: 'English', display: 'English' },
-  { name: 'Kannada', display: 'ಕನ್ನಡ' },
   { name: 'Hindi', display: 'हिन्दी' },
   { name: 'Punjabi', display: 'ਪੰਜਾਬੀ' },
-  { name: 'Tamil', display: 'தமிழ்' },
-  { name: 'Telugu', display: 'తెలుగు' },
 ];
 
 const LanguageSelectionScreen = ({ navigation }) => {
-  const [selectedLanguage, setSelectedLanguage] = useState('English');
+  const { translations, language, setLanguage, ttsEnabled, setTtsEnabled } = useLanguage();
   const [windowWidth, setWindowWidth] = useState(Dimensions.get('window').width);
   const [windowHeight, setWindowHeight] = useState(Dimensions.get('window').height);
   const [orientation, setOrientation] = useState(windowWidth > windowHeight ? 'landscape' : 'portrait');
@@ -27,12 +27,85 @@ const LanguageSelectionScreen = ({ navigation }) => {
     return () => subscription?.remove();
   }, []);
 
-  const handleLanguageSelect = (language) => {
-    setSelectedLanguage(language);
+  useEffect(() => {
+    // Log available voices for debugging
+    Speech.getAvailableVoicesAsync().then((voices) => {
+      console.log('Available TTS voices in Expo Go:', voices);
+    }).catch((error) => {
+      console.error('Error fetching voices:', error);
+    });
+
+    // Stop speech on component unmount
+    return () => {
+      Speech.stop();
+    };
+  }, []);
+
+  const handleLanguageSelect = (lang) => {
+    setLanguage(lang);
   };
 
   const handleContinue = () => {
     navigation.navigate('Signin');
+  };
+
+  const playWelcomeMessage = async () => {
+    try {
+      await Speech.stop();
+      const preferredLang = language === 'English' ? 'en-US' : language === 'Hindi' ? 'hi-IN' : 'pa-IN';
+      let speechLang = preferredLang;
+
+      const availableVoices = await Speech.getAvailableVoicesAsync();
+      const isLangSupported = availableVoices.some((voice) => voice.language === preferredLang);
+
+      if (!isLangSupported) {
+        console.warn(`Language ${preferredLang} not supported, falling back to en-US`);
+        speechLang = 'en-US';
+        Alert.alert(
+          'Language Not Supported',
+          `Text-to-Speech for ${language} is not available in Expo Go. Using English as fallback.`,
+          [{ text: 'OK' }]
+        );
+      }
+
+      Speech.speak(translations[language].welcome_message, {
+        language: speechLang,
+        pitch: 1.0,
+        rate: 0.5,
+        onError: (error) => {
+          console.error('Speech Error:', error);
+          Alert.alert(
+            'Audio Error',
+            'Failed to play audio. Please check your device settings or try again.',
+            [{ text: 'OK' }]
+          );
+        },
+      });
+    } catch (error) {
+      console.error('TTS Error:', error);
+      Alert.alert(
+        'Audio Error',
+        'Text-to-Speech failed to initialize. Ensure your device supports TTS and try again.',
+        [{ text: 'OK' }]
+      );
+    }
+  };
+
+  const toggleTts = () => {
+    setTtsEnabled(!ttsEnabled);
+    if (!ttsEnabled) {
+      // Play a confirmation message when enabling TTS
+      Speech.speak(
+        translations[language].tts_toggle + ' enabled',
+        {
+          language: language === 'English' ? 'en-US' : language === 'Hindi' ? 'hi-IN' : 'en-US',
+          pitch: 1.0,
+          rate: 0.5,
+        }
+      );
+    } else {
+      Speech.stop(); // Stop any ongoing speech when disabling
+    }
   };
 
   const styles = StyleSheet.create({
@@ -104,40 +177,77 @@ const LanguageSelectionScreen = ({ navigation }) => {
       fontSize: windowHeight * 0.022,
       fontWeight: '600',
     },
+    audioButton: {
+      marginTop: windowHeight * 0.02,
+      padding: windowWidth * 0.03,
+      backgroundColor: '#10b981',
+      borderRadius: windowWidth * 0.03,
+      alignItems: 'center',
+    },
+    audioButtonText: {
+      color: '#ffffff',
+      fontSize: windowHeight * 0.018,
+      fontWeight: '600',
+    },
+    ttsToggleContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginTop: windowHeight * 0.02,
+      marginBottom: windowHeight * 0.02,
+    },
+    ttsToggleText: {
+      fontSize: windowHeight * 0.018,
+      color: '#1e293b',
+      marginRight: windowWidth * 0.02,
+    },
   });
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
         <View style={styles.header}>
-          <Text style={styles.title}>Choose Language</Text>
-          <Text style={styles.subtitle}>Select your preferred language</Text>
+          <Text style={styles.title}>{translations[language].choose_language}</Text>
+          <Text style={styles.subtitle}>{translations[language].select_preferred_language}</Text>
         </View>
 
         <View style={styles.languageContainer}>
-          {languages.map((language) => (
+          {languages.map((lang) => (
             <TouchableOpacity
-              key={language.name}
+              key={lang.name}
               style={[
                 styles.languageButton,
-                selectedLanguage === language.name && styles.selectedLanguageButton,
+                language === lang.name && styles.selectedLanguageButton,
               ]}
-              onPress={() => handleLanguageSelect(language.name)}
+              onPress={() => handleLanguageSelect(lang.name)}
             >
               <Text
                 style={[
                   styles.languageText,
-                  selectedLanguage === language.name && styles.selectedLanguageText,
+                  language === lang.name && styles.selectedLanguageText,
                 ]}
               >
-                {language.display}
+                {lang.display}
               </Text>
             </TouchableOpacity>
           ))}
         </View>
 
+        <View style={styles.ttsToggleContainer}>
+          <Text style={styles.ttsToggleText}>{translations[language].tts_toggle}</Text>
+          <Switch
+            value={ttsEnabled}
+            onValueChange={toggleTts}
+            trackColor={{ false: '#64748b', true: '#3b82f6' }}
+            thumbColor={ttsEnabled ? '#ffffff' : '#f8fafc'}
+          />
+        </View>
+
+        <TouchableOpacity style={styles.audioButton} onPress={playWelcomeMessage}>
+          <Text style={styles.audioButtonText}>Play Welcome Message</Text>
+        </TouchableOpacity>
+
         <TouchableOpacity style={styles.continueButton} onPress={handleContinue}>
-          <Text style={styles.continueButtonText}>Continue</Text>
+          <Text style={styles.continueButtonText}>{translations[language].continue}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

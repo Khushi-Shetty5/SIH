@@ -1,8 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, Alert, Dimensions } from 'react-native';
+import * as Speech from 'expo-speech';
+import * as SMS from 'expo-sms'; // Import expo-sms
 import { Ionicons } from '@expo/vector-icons';
+import { useLanguage } from '../languageConstants';
+
+const BACKEND_URL = 'http://192.168.117.168:3000'; // Replace with your backend server's IP
 
 const SigninScreen = ({ navigation }) => {
+  const { translations, language, ttsEnabled } = useLanguage();
   const [phone, setPhone] = useState('');
   const [name, setName] = useState('');
   const [windowWidth, setWindowWidth] = useState(Dimensions.get('window').width);
@@ -20,43 +26,117 @@ const SigninScreen = ({ navigation }) => {
     return () => subscription?.remove();
   }, []);
 
-  const handleSignin = () => {
-    if (!phone || !name) {
-      Alert.alert('Error', 'Please enter both phone number and name');
-      return;
+  useEffect(() => {
+    if (ttsEnabled) {
+      playScreenText();
     }
-    navigation.replace('Home');
+    return () => {
+      Speech.stop();
+    };
+  }, [ttsEnabled, language]);
+
+  const playScreenText = async () => {
+    try {
+      await Speech.stop();
+      const preferredLang = language === 'English' ? 'en-US' : language === 'Hindi' ? 'hi-IN' : 'pa-IN';
+      let speechLang = preferredLang;
+      const availableVoices = await Speech.getAvailableVoicesAsync();
+      const isLangSupported = availableVoices.some((voice) => voice.language === preferredLang);
+      if (!isLangSupported) {
+        speechLang = 'en-US';
+      }
+      const textToSpeak = `${translations[language].medkit}. ${translations[language].sign_in_to_continue}. ${translations[language].name_placeholder}. ${translations[language].phone_placeholder}. ${translations[language].sign_in}.`;
+      Speech.speak(textToSpeak, { language: speechLang, pitch: 1.0, rate: 0.5 });
+    } catch (error) {
+      console.error('TTS Error:', error);
+    }
   };
 
+  const playText = async (text) => {
+    if (!ttsEnabled) return;
+    try {
+      await Speech.stop();
+      const preferredLang = language === 'English' ? 'en-US' : language === 'Hindi' ? 'hi-IN' : 'pa-IN';
+      let speechLang = preferredLang;
+      const availableVoices = await Speech.getAvailableVoicesAsync();
+      const isLangSupported = availableVoices.some((voice) => voice.language === preferredLang);
+      if (!isLangSupported) {
+        speechLang = 'en-US';
+      }
+      Speech.speak(text, { language: speechLang, pitch: 1.0, rate: 0.5 });
+    } catch (error) {
+      console.error('TTS Error:', error);
+    }
+  };
+
+  const generateOTP = () => {
+    return Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
+  };
+
+  const handleSignin = async () => {
+    if (!phone || !name) {
+      Alert.alert('Error', 'Please enter both name and phone number');
+      return;
+    }
+    try {
+      // Check if SMS is available
+      const isAvailable = await SMS.isAvailableAsync();
+      if (!isAvailable) {
+        Alert.alert('Error', 'SMS is not available on this device. Please use a device with SMS capability.');
+        return;
+      }
+
+      // Check if phone exists in backend
+      const response = await fetch(`${BACKEND_URL}/auth/signin`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone }),
+      });
+      const data = await response.json();
+      if (response.ok) {
+        // Generate OTP locally
+        const otp = generateOTP();
+        // Store OTP in backend
+        const otpResponse = await fetch(`${BACKEND_URL}/auth/store-otp`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone, otp }),
+        });
+        const otpData = await otpResponse.json();
+        if (otpResponse.ok) {
+          // Send OTP via SMS
+          await SMS.sendSMSAsync([phone], `Your Nabha Hospital OTP is ${otp}`);
+          navigation.navigate('OTP', { phone });
+        } else {
+          Alert.alert('Error', otpData.error || 'Failed to store OTP');
+        }
+      } else {
+        Alert.alert('Error', data.error === 'Phone number not found' ? 'This phone number is not registered. Please sign up.' : data.error);
+      }
+    } catch (error) {
+      console.error('Signin error:', error);
+      Alert.alert('Error', 'Failed to connect to server or send SMS. Check your network or SIM.');
+    }
+  };
+
+  // Styles remain unchanged
   const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: '#f8fafc',
-    },
+    container: { flex: 1, backgroundColor: '#f8fafc' },
     content: {
       flex: 1,
       paddingHorizontal: orientation === 'landscape' ? windowWidth * 0.1 : windowWidth * 0.06,
       justifyContent: 'center',
       alignItems: 'center',
     },
-    header: {
-      alignItems: 'center',
-      marginBottom: windowHeight * 0.06,
-    },
+    header: { alignItems: 'center', marginBottom: windowHeight * 0.06 },
     title: {
       fontSize: windowHeight * 0.04,
       fontWeight: 'bold',
       color: '#1e293b',
       marginBottom: windowHeight * 0.01,
     },
-    subtitle: {
-      fontSize: windowHeight * 0.022,
-      color: '#64748b',
-    },
-    form: {
-      width: windowWidth * 0.9,
-      marginBottom: windowHeight * 0.04,
-    },
+    subtitle: { fontSize: windowHeight * 0.022, color: '#64748b' },
+    form: { width: windowWidth * 0.9, marginBottom: windowHeight * 0.04 },
     inputContainer: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -71,10 +151,7 @@ const SigninScreen = ({ navigation }) => {
       shadowRadius: windowWidth * 0.005,
       elevation: 1,
     },
-    inputIcon: {
-      marginRight: windowWidth * 0.03,
-      fontSize: windowHeight * 0.025,
-    },
+    inputIcon: { marginRight: windowWidth * 0.03, fontSize: windowHeight * 0.025 },
     input: {
       flex: 1,
       paddingVertical: windowHeight * 0.02,
@@ -88,33 +165,33 @@ const SigninScreen = ({ navigation }) => {
       alignItems: 'center',
       marginTop: windowHeight * 0.01,
     },
-    signinButtonText: {
-      color: '#ffffff',
-      fontSize: windowHeight * 0.02,
-      fontWeight: '600',
-    },
-    footer: {
-      flexDirection: 'row',
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
-    footerText: {
-      color: '#64748b',
-      fontSize: windowHeight * 0.018,
-    },
-    signupLink: {
-      color: '#3b82f6',
-      fontSize: windowHeight * 0.018,
-      fontWeight: '600',
-    },
+    signinButtonText: { color: '#ffffff', fontSize: windowHeight * 0.02, fontWeight: '600' },
+    footer: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center' },
+    footerText: { color: '#64748b', fontSize: windowHeight * 0.018 },
+    signupLink: { color: '#3b82f6', fontSize: windowHeight * 0.018, fontWeight: '600' },
+    ttsButton: { marginLeft: windowWidth * 0.02 },
   });
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
         <View style={styles.header}>
-          <Text style={styles.title}>MedKit</Text>
-          <Text style={styles.subtitle}>Sign in to continue</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Text style={styles.title}>{translations[language].medkit}</Text>
+            {ttsEnabled && (
+              <TouchableOpacity style={styles.ttsButton} onPress={() => playText(translations[language].medkit)}>
+                <Ionicons name="volume-high-outline" size={windowHeight * 0.025} color="#3b82f6" />
+              </TouchableOpacity>
+            )}
+          </View>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Text style={styles.subtitle}>{translations[language].sign_in_to_continue}</Text>
+            {ttsEnabled && (
+              <TouchableOpacity style={styles.ttsButton} onPress={() => playText(translations[language].sign_in_to_continue)}>
+                <Ionicons name="volume-high-outline" size={windowHeight * 0.025} color="#3b82f6" />
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
 
         <View style={styles.form}>
@@ -122,33 +199,60 @@ const SigninScreen = ({ navigation }) => {
             <Ionicons name="person-outline" size={styles.inputIcon.fontSize} color="#64748b" style={styles.inputIcon} />
             <TextInput
               style={styles.input}
-              placeholder="Name *"
+              placeholder={translations[language].name_placeholder}
               value={name}
               onChangeText={setName}
             />
+            {ttsEnabled && (
+              <TouchableOpacity style={styles.ttsButton} onPress={() => playText(translations[language].name_placeholder)}>
+                <Ionicons name="volume-high-outline" size={windowHeight * 0.025} color="#3b82f6" />
+              </TouchableOpacity>
+            )}
           </View>
 
           <View style={styles.inputContainer}>
             <Ionicons name="call-outline" size={styles.inputIcon.fontSize} color="#64748b" style={styles.inputIcon} />
             <TextInput
               style={styles.input}
-              placeholder="Phone Number *"
+              placeholder={translations[language].phone_placeholder}
               value={phone}
               onChangeText={setPhone}
               keyboardType="phone-pad"
             />
+            {ttsEnabled && (
+              <TouchableOpacity style={styles.ttsButton} onPress={() => playText(translations[language].phone_placeholder)}>
+                <Ionicons name="volume-high-outline" size={windowHeight * 0.025} color="#3b82f6" />
+              </TouchableOpacity>
+            )}
           </View>
 
-          <TouchableOpacity style={styles.signinButton} onPress={handleSignin}>
-            <Text style={styles.signinButtonText}>Sign In</Text>
-          </TouchableOpacity>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <TouchableOpacity style={styles.signinButton} onPress={handleSignin}>
+              <Text style={styles.signinButtonText}>{translations[language].sign_in}</Text>
+            </TouchableOpacity>
+            {ttsEnabled && (
+              <TouchableOpacity style={styles.ttsButton} onPress={() => playText(translations[language].sign_in)}>
+                <Ionicons name="volume-high-outline" size={windowHeight * 0.025} color="#3b82f6" />
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
 
         <View style={styles.footer}>
-          <Text style={styles.footerText}>Don't have an account? </Text>
+          <Text style={styles.footerText}>{translations[language].no_account}</Text>
+          {ttsEnabled && (
+            <TouchableOpacity style={styles.ttsButton} onPress={() => playText(translations[language].no_account)}>
+              <Ionicons name="volume-high-outline" size={windowHeight * 0.018} color="#3b82f6" />
+            </TouchableOpacity>
+          )}
           <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
-            <Text style={styles.signupLink}>Sign up</Text>
+            <Text style={styles.signupLink}>{translations[language].sign_up_link}</Text>
           </TouchableOpacity>
+          {ttsEnabled && (
+            <TouchableOpacity style={styles.ttsButton} onPress={() => playText(translations[language].sign_up_link)}>
+              <Ionicons name="volume-high-outline" size={windowHeight * 0.018} color="#3b82f6" />
+            </TouchableOpacity>
+          )}
         </View>
       </View>
     </SafeAreaView>
