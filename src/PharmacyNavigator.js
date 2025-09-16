@@ -1,8 +1,8 @@
 import React from "react";
-import DoctorNavigator from "../doctor/DoctorNavigator";
+import { DoctorApp } from "../doctor/DoctorNavigator";
 
 const PharmacyNavigator = () => {
-  return <DoctorNavigator />;
+  return <DoctorApp />;
 };
 
 export default PharmacyNavigator;

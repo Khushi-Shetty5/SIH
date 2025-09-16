@@ -45,8 +45,10 @@ export default function ReportDetail({ route }) {
     <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
       <Text style={styles.title}>{report.title}</Text>
       <Text style={styles.meta}>Patient ID: {report.patientId}</Text>
-      <Text style={styles.meta}>Uploaded by: {report.uploadedByName}</Text>
+      {/* <Text style={styles.meta}>Uploaded by: {report.uploadedByName}</Text> */}
       <Text style={styles.meta}>On: {new Date(report.createdAt).toLocaleString()}</Text>
+      <Text style={styles.title}>content:</Text>
+      <Text style={styles.meta}> {report.content}</Text>
 
       {report.type === "manual" ? (
         <View style={styles.contentBox}>
