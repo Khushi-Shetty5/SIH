@@ -4,6 +4,8 @@ import axios from "axios";
 const DoctorContext = React.createContext(null);
 
 export function DoctorProvider({ children }) {
+  const API_BASE_URL = "http://192.168.1.18:5000";
+  
   const [doctorData, setDoctorData] = React.useState(null);
   const [emergencies, setEmergencies] = React.useState([]);
   const [patients, setPatients] = React.useState([]);
@@ -12,109 +14,280 @@ export function DoctorProvider({ children }) {
   const [medicines, setMedicines] = React.useState([]);
   const [treatedLog, setTreatedLog] = React.useState([]);
 
-  // Function to fetch doctor data
-  const fetchDoctorData = async () => {
+  // Function to update calendar slot in backend
+  const upsertCalendarSlot = async ({ date, time, status, patientId, patientName, patientAge, patientGender, patientContact }) => {
     try {
-      console.log("Starting to fetch doctor data...");
+      console.log('Updating calendar slot:', { date, time, status, patientId });
       
-      // API base URL - change this based on your environment
-      const API_BASE_URL = "http://192.168.1.18:5000";
+      const response = await axios.post(
+        `${API_BASE_URL}/api/doctors/68c81b568ecd90085701e053/calendar`,
+        { date, time, status, patientId, patientName, patientAge, patientGender, patientContact },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
       
-      // Fetch doctor data from API
-      const response = await axios.get(`${API_BASE_URL}/api/doctors/68c81b568ecd90085701e053/`);
-      console.log("Successfully received doctor data:", response.data);
+      console.log('Calendar updated successfully:', response.data);
       
-      // Extract the doctor object from the response
-      const doctor = response.data.doctor;
-      setDoctorData(doctor);
-      
-      // Extract related data from the doctor response
-      if (doctor) {
-        // Handle patients with populated reports
-        const patientsList = doctor.patients || [];
-        console.log("Extracted patients from API:", patientsList);
-        setPatients(patientsList);
+      // Update local doctor data with the new calendar
+      if (response.data.calendar) {
+        const updatedDoctorData = {
+          ...doctorData,
+          calendar: response.data.calendar
+        };
+        setDoctorData(updatedDoctorData);
         
-        // Extract all reports from patients and also doctor's reports
-        const allReports = [];
-        
-        // Add reports from each patient
-        patientsList.forEach(patient => {
-          if (patient.reports && Array.isArray(patient.reports)) {
-            patient.reports.forEach(report => {
-              allReports.push({
-                ...report,
-                patient: patient._id || patient.id, // Ensure patientId is set
-                patientName: patient.name // Add patient name for easier reference
+        // Re-process appointments from updated calendar data
+        const calendarAppointments = [];
+        if (response.data.calendar && Array.isArray(response.data.calendar)) {
+          response.data.calendar.forEach(day => {
+            if (day.slots && Array.isArray(day.slots)) {
+              day.slots.forEach(slot => {
+                if (slot.status === 'booked' && slot.patient) {
+                  // Handle both string and Date object formats for day.date
+                const dateObj = typeof day.date === 'string' ? new Date(day.date) : day.date;
+                const appointmentDate = new Date(dateObj);
+                  const [hours, minutes] = slot.time.split(':').map(Number);
+                  appointmentDate.setHours(hours, minutes, 0, 0);
+                  
+                  calendarAppointments.push({
+                    id: `cal_${day.date}_${slot.time}`,
+                    patientId: slot.patient,
+                    when: appointmentDate.getTime(),
+                    type: 'consultation',
+                    duration: 30,
+                    status: 'scheduled',
+                    patientName: slot.patientName || '',
+                    patientAge: slot.patientAge || '',
+                    patientGender: slot.patientGender || '',
+                    patientContact: slot.patientContact || '',
+                    createdAt: new Date().toISOString()
+                  });
+                }
               });
-            });
-          }
-        });
-        
-        // Add doctor-level reports if any
-        if (doctor.reports && Array.isArray(doctor.reports)) {
-          allReports.push(...doctor.reports);
+            }
+          });
         }
         
-        console.log("Extracted reports from API:", allReports);
-        setReports(allReports);
-        
-        setAppointments(doctor.appointments || []);
-        setMedicines(doctor.medicines || []);
-        setTreatedLog(doctor.treatedLog || []);
+        // Combine with existing appointments
+        const allAppointments = [...(doctorData?.appointments || []), ...calendarAppointments];
+        setAppointments(allAppointments);
       }
-    } catch (error) {
-      console.error("Error fetching doctor data:", error);
       
-      // Log additional error details
+      return { success: true, message: response.data.message };
+    } catch (error) {
+      console.error('Error updating calendar:', error);
+      
       if (error.response) {
-        // The request was made and the server responded with a status code
-        console.log("Error response data:", error.response.data);
-        console.log("Error response status:", error.response.status);
-        console.log("Error response headers:", error.response.headers);
+        console.log('API Error response data:', error.response.data);
+        console.log('API Error response status:', error.response.status);
+        return { 
+          success: false, 
+          error: error.response.data?.message || 'Failed to update calendar on server' 
+        };
       } else if (error.request) {
-        // The request was made but no response was received
-        console.log("Error request:", error.request);
+        console.log('API Error request:', error.request);
+        return { 
+          success: false, 
+          error: 'Network error - unable to reach server' 
+        };
       } else {
-        // Something happened in setting up the request that triggered an Error
-        console.log("Error message:", error.message);
+        console.log('API Error message:', error.message);
+        return { 
+          success: false, 
+          error: 'Failed to update calendar' 
+        };
       }
     }
   };
 
-  // Function to fetch emergencies
-  const fetchEmergencies = async () => {
+  // Function to fetch calendar data separately
+  const fetchCalendarData = async () => {
     try {
-      const API_BASE_URL = "http://192.168.1.18:5000";
+      const response = await axios.get(
+        `${API_BASE_URL}/api/doctors/68c81b568ecd90085701e053/calendar`
+      );
       
-      // Fetch emergency data separately
-      const response = await axios.get(`${API_BASE_URL}/api/doctors/68c81b568ecd90085701e053/emergencies`);
-      console.log("Successfully received emergency data:", response.data);
-      
-      // Extract emergencies from the response
-      const emergencyData = response.data.emergencies || response.data || [];
-      setEmergencies(emergencyData);
-      console.log("Extracted emergencies from API:", emergencyData);
+      console.log('Calendar data fetched successfully:', response.data);
+      return response.data.calendar || [];
     } catch (error) {
-      console.error("Error fetching emergency data:", error);
-      
-      if (error.response) {
-        console.log("Emergency API Error response data:", error.response.data);
-        console.log("Emergency API Error response status:", error.response.status);
-      } else if (error.request) {
-        console.log("Emergency API Error request:", error.request);
-      } else {
-        console.log("Emergency API Error message:", error.message);
-      }
-      
-      // Set empty array on error
-      setEmergencies([]);
+      console.error('Error fetching calendar data:', error);
+      return [];
     }
   };
 
   React.useEffect(() => {
-    fetchDoctorData();
-    fetchEmergencies();
+    console.log("Starting to fetch doctor data...");
+    
+    // API base URL - change this based on your environment
+    const API_BASE_URL = "http://192.168.1.18:5000";
+    
+    // Create a function to process calendar data
+    const processCalendarData = (calendarData, patientsList) => {
+      let calendarAppointments = [];
+      if (calendarData && Array.isArray(calendarData)) {
+        calendarData.forEach(day => {
+          if (day.slots && Array.isArray(day.slots)) {
+            day.slots.forEach(slot => {
+              if (slot.status === 'booked' && slot.patient) {
+                // Handle both string and Date object formats for day.date
+                const dateObj = typeof day.date === 'string' ? new Date(day.date) : new Date(day.date);
+                const appointmentDate = new Date(dateObj);
+                const [hours, minutes] = slot.time.split(':').map(Number);
+                appointmentDate.setHours(hours, minutes, 0, 0);
+                
+                // Find patient details
+                const patient = patientsList.find(p => 
+                  (p._id && p._id.toString() === slot.patient.toString()) || 
+                  (p.id && p.id.toString() === slot.patient.toString())
+                );
+                
+                // Format date string properly for the ID
+                const dateString = typeof day.date === 'string' ? 
+                  day.date.split('T')[0] : 
+                  dateObj.toISOString().split('T')[0];
+                
+                calendarAppointments.push({
+                  id: `cal_${dateString}_${slot.time}`,
+                  patientId: slot.patient,
+                  when: appointmentDate.getTime(),
+                  type: 'consultation',
+                  duration: 30,
+                  status: 'scheduled',
+                  patientName: patient?.name || '',
+                  patientAge: patient?.age || '',
+                  patientGender: patient?.gender || '',
+                  patientContact: patient?.contact || '',
+                  createdAt: new Date().toISOString()
+                });
+              }
+            });
+          }
+        });
+      }
+      return calendarAppointments;
+    };
+    
+    // Fetch doctor data from API
+    axios.get(`${API_BASE_URL}/api/doctors/68c81b568ecd90085701e053/`)
+      .then(response => {
+        console.log("Successfully received doctor data:", response.data);
+        
+        // Extract the doctor object from the response
+        const doctor = response.data.doctor;
+        setDoctorData(doctor);
+        
+        // Extract related data from the doctor response
+        if (doctor) {
+          // Handle patients with populated reports
+          const patientsList = doctor.patients || [];
+          console.log("Extracted patients from API:", patientsList);
+          setPatients(patientsList);
+          
+          // Extract all reports from patients and also doctor's reports
+          const allReports = [];
+          
+          // Add reports from each patient
+          patientsList.forEach(patient => {
+            if (patient.reports && Array.isArray(patient.reports)) {
+              patient.reports.forEach(report => {
+                allReports.push({
+                  ...report,
+                  patientId: patient._id || patient.id, // Ensure patientId is set
+                  patientName: patient.name // Add patient name for easier reference
+                });
+              });
+            }
+          });
+          
+          // Add doctor-level reports if any
+          if (doctor.reports && Array.isArray(doctor.reports)) {
+            allReports.push(...doctor.reports);
+          }
+          
+          console.log("Extracted reports from API:", allReports);
+          setReports(allReports);
+          
+          // Process calendar data into appointments
+          const calendarAppointments = processCalendarData(doctor.calendar, patientsList);
+          
+          // Combine calendar appointments with regular appointments
+          const allAppointments = [...(doctor.appointments || []), ...calendarAppointments];
+          console.log("Setting appointments with calendar data:", allAppointments);
+          setAppointments(allAppointments);
+          
+          setMedicines(doctor.medicines || []);
+          setTreatedLog(doctor.treatedLog || []);
+        }
+      })
+      .catch(error => {
+        console.error("Error fetching doctor data:", error);
+        
+        // Log additional error details
+        if (error.response) {
+          // The request was made and the server responded with a status code
+          console.log("Error response data:", error.response.data);
+          console.log("Error response status:", error.response.status);
+          console.log("Error response headers:", error.response.headers);
+        } else if (error.request) {
+          // The request was made but no response was received
+          console.log("Error request:", error.request);
+        } else {
+          // Something happened in setting up the request that triggered an Error
+          console.log("Error message:", error.message);
+        }
+      });
+
+    // Fetch emergency data separately
+    axios.get(`${API_BASE_URL}/api/doctors/68c81b568ecd90085701e053/emergencies`)
+      .then(response => {
+        console.log("Successfully received emergency data:", response.data);
+        
+        // Extract emergencies from the response
+        const emergencyData = response.data.emergencies || response.data || [];
+        setEmergencies(emergencyData);
+        console.log("Extracted emergencies from API:", emergencyData);
+      })
+      .catch(error => {
+        console.error("Error fetching emergency data:", error);
+        
+        if (error.response) {
+          console.log("Emergency API Error response data:", error.response.data);
+          console.log("Emergency API Error response status:", error.response.status);
+        } else if (error.request) {
+          console.log("Emergency API Error request:", error.request);
+        } else {
+          console.log("Emergency API Error message:", error.message);
+        }
+        
+        // Set empty array on error
+        setEmergencies([]);
+      });
+      
+    // Fetch calendar data separately to ensure we get the latest data
+    // We'll fetch calendar data after we have the patients data
+    const fetchCalendarWithPatients = async () => {
+      try {
+        const calendarData = await fetchCalendarData();
+        console.log("Calendar data fetched:", calendarData);
+        // Process calendar data into appointments
+        const calendarAppointments = processCalendarData(calendarData, patients);
+        
+        // Combine calendar appointments with regular appointments
+        const allAppointments = [...appointments, ...calendarAppointments];
+        console.log("Updated appointments with calendar data:", allAppointments);
+        setAppointments(allAppointments);
+      } catch (error) {
+        console.error("Error fetching calendar data:", error);
+      }
+    };
+    
+    // Only fetch calendar data if we have patients
+    if (patients && patients.length > 0) {
+      fetchCalendarWithPatients();
+    }
   }, []); // Empty dependency array means this runs once on mount
 
   const attendEmergency = async (id, doctorId = "68c81b568ecd90085701e053") => {
@@ -393,7 +566,7 @@ export function DoctorProvider({ children }) {
       const newReport = response.data.report || response.data;
       const reportWithPatientId = {
         ...newReport,
-        patient: patientId, // Ensure patientId is set
+        patientId: patientId, // Ensure patientId is set
         patientName: patients.find(p => (p._id || p.id) === patientId)?.name || 'Unknown Patient'
       };
       
@@ -642,7 +815,8 @@ export function DoctorProvider({ children }) {
     addEmergency, // Add the new function to the context value
     updateEmergency,
     acknowledgeEmergencyAPI,
-    fetchDoctorData, // Add fetchDoctorData to refresh data
+    upsertCalendarSlot,
+    fetchCalendarData // Add the new function to fetch calendar data
   };
 
   return <DoctorContext.Provider value={value}>{children}</DoctorContext.Provider>;

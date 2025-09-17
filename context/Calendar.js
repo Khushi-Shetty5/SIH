@@ -1,18 +1,18 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Alert, Modal, Linking } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useDoctor } from './DoctorContext';
 
 export function Calendar() {
-  const { patients, appointments, scheduleAppointment, completeAppointment, updateAppointment, cancelAppointment } = useDoctor();
+  const { patients, appointments, scheduleAppointment, completeAppointment, updateAppointment, cancelAppointment, upsertCalendarSlot, fetchCalendarData } = useDoctor();
   const [currentView, setCurrentView] = React.useState('day');
   const [selectedDate, setSelectedDate] = React.useState(new Date());
   const [doctorStatus, setDoctorStatus] = React.useState('available');
   const [showAppointmentModal, setShowAppointmentModal] = React.useState(false);
   const [selectedAppointment, setSelectedAppointment] = React.useState(null);
   const [time, setTime] = React.useState("");
-  const [patientId, setPatientId] = React.useState(patients[0]?.id || "");
+  const [patientId, setPatientId] = React.useState(patients[0]?._id || patients[0]?.id || "");
   const [appointmentType, setAppointmentType] = React.useState('consultation');
   const [duration, setDuration] = React.useState(30);
   const [customAppointmentTitle, setCustomAppointmentTitle] = React.useState('');
@@ -22,74 +22,18 @@ export function Calendar() {
   const [selectedTimeSlot, setSelectedTimeSlot] = React.useState(null);
   const [unavailableSlots, setUnavailableSlots] = React.useState([]);
   
-  const renderViewSelector = () => (
-    <View style={styles.viewSelector}>
-      {['day', 'agenda'].map(view => (
-        <TouchableOpacity
-          key={view}
-          style={[styles.viewButton, currentView === view && styles.viewButtonActive]}
-          onPress={() => setCurrentView(view)}
-        >
-          <MaterialIcons 
-            name={view === 'day' ? 'today' : 'list'} 
-            size={16} 
-            color={currentView === view ? '#fff' : '#6c757d'} 
-          />
-          <Text style={[styles.viewButtonText, currentView === view && styles.viewButtonTextActive]}>
-            {view === 'day' ? 'Day View' : 'Agenda'}
-          </Text>
-        </TouchableOpacity>
-      ))}
-    </View>
-  );
-  
-  const getStatusBadge = (status) => {
-    const badges = {
-      'scheduled': { label: 'Scheduled', color: '#2E86C1', bgColor: '#E3F2FD' },
-      'confirmed': { label: 'Confirmed', color: '#28A745', bgColor: '#E8F5E8' },
-      'checked_in': { label: 'Checked In', color: '#FF9800', bgColor: '#FFF3E0' },
-      'in_progress': { label: 'In Progress', color: '#9C27B0', bgColor: '#F3E5F5' },
-      'completed': { label: 'Completed', color: '#4CAF50', bgColor: '#E8F5E8' },
-      'cancelled': { label: 'Cancelled', color: '#F44336', bgColor: '#FFEBEE' },
-      'no_show': { label: 'No Show', color: '#607D8B', bgColor: '#ECEFF1' }
+  // Fetch calendar data when component mounts
+  useEffect(() => {
+    const loadCalendarData = async () => {
+      try {
+        await fetchCalendarData();
+      } catch (error) {
+        console.error('Error loading calendar data:', error);
+      }
     };
-    return badges[status] || badges['scheduled'];
-  };
-  
-  const enhancedAppointments = React.useMemo(() => {
-    return appointments.map(apt => {
-      const patient = patients.find(p => p.id === apt.patientId);
-      return {
-        ...apt,
-        patient,
-        type: apt.type || 'consultation',
-        duration: apt.duration || 30,
-        statusBadge: getStatusBadge(apt.status),
-        isToday: new Date(apt.when).toDateString() === new Date().toDateString()
-      };
-    });
-  }, [appointments, patients]);
-  
-  const filteredAppointments = React.useMemo(() => {
-    const viewDate = selectedDate;
-    const startOfDay = new Date(viewDate);
-    startOfDay.setHours(0, 0, 0, 0);
     
-    let endDate = new Date(viewDate);
-    endDate.setHours(23, 59, 59, 999);
-    
-    return enhancedAppointments.filter(apt => {
-      const aptDate = new Date(apt.when);
-      return aptDate >= startOfDay && aptDate <= endDate;
-    });
-  }, [enhancedAppointments, currentView, selectedDate]);
-  
-  const todayAppointments = React.useMemo(() => {
-    const today = new Date();
-    return enhancedAppointments.filter(apt => 
-      new Date(apt.when).toDateString() === today.toDateString()
-    ).sort((a, b) => new Date(a.when) - new Date(b.when));
-  }, [enhancedAppointments]);
+    loadCalendarData();
+  }, []);
   
   const handleCreateAppointment = () => {
     if (showCustomAppointment) {
@@ -124,12 +68,39 @@ export function Calendar() {
         const d = new Date(selectedDate);
         d.setHours(Number(hh), Number(mm), 0, 0);
         
-        scheduleAppointment({ 
+        // Find the patient details
+        const patient = patients.find(p => (p._id || p.id) === patientId);
+        
+        // Create a new appointment with patient details
+        const newAppointment = {
           patientId, 
           when: d.getTime(),
           type: appointmentType,
           duration,
-          status: 'scheduled'
+          status: 'scheduled',
+          patientName: patient?.name || '',
+          patientAge: patient?.age || '',
+          patientGender: patient?.gender || '',
+          patientContact: patient?.contact || ''
+        };
+        
+        // Schedule the appointment in the context
+        scheduleAppointment(newAppointment);
+        
+        // Format date in ISO format for the backend
+        const date = d.toISOString().split('T')[0];
+        const time = `${hh}:${mm}`;
+        
+        // Call the backend to create the calendar slot
+        upsertCalendarSlot({
+          date,
+          time,
+          status: 'booked',
+          patientId: patientId,
+          patientName: patient?.name || '',
+          patientAge: patient?.age || '',
+          patientGender: patient?.gender || '',
+          patientContact: patient?.contact || ''
         });
         
         setTime("");
@@ -140,6 +111,74 @@ export function Calendar() {
       Alert.alert('Error', 'Please fill in all required fields');
     }
   };
+
+  const getStatusBadge = (status) => {
+    const badges = {
+      'scheduled': { label: 'Scheduled', color: '#2E86C1', bgColor: '#E3F2FD' },
+      'confirmed': { label: 'Confirmed', color: '#28A745', bgColor: '#E8F5E8' },
+      'checked_in': { label: 'Checked In', color: '#FF9800', bgColor: '#FFF3E0' },
+      'in_progress': { label: 'In Progress', color: '#9C27B0', bgColor: '#F3E5F5' },
+      'completed': { label: 'Completed', color: '#4CAF50', bgColor: '#E8F5E8' },
+      'cancelled': { label: 'Cancelled', color: '#F44336', bgColor: '#FFEBEE' },
+      'no_show': { label: 'No Show', color: '#607D8B', bgColor: '#ECEFF1' }
+    };
+    return badges[status] || badges['scheduled'];
+  };
+  
+  const enhancedAppointments = React.useMemo(() => {
+    return appointments.map(apt => {
+      // If appointment already has patient details, use them
+      if (apt.patientName || apt.patient) {
+        const patient = apt.patient || {
+          id: apt.patientId,
+          name: apt.patientName || '',
+          age: apt.patientAge || '',
+          gender: apt.patientGender || '',
+          contact: apt.patientContact || ''
+        };
+        return {
+          ...apt,
+          patient,
+          type: apt.type || 'consultation',
+          duration: apt.duration || 30,
+          statusBadge: getStatusBadge(apt.status),
+          isToday: new Date(apt.when).toDateString() === new Date().toDateString()
+        };
+      }
+      
+      // Otherwise, find patient by ID
+      const patient = patients.find(p => (p._id || p.id) === apt.patientId);
+      return {
+        ...apt,
+        patient,
+        type: apt.type || 'consultation',
+        duration: apt.duration || 30,
+        statusBadge: getStatusBadge(apt.status),
+        isToday: new Date(apt.when).toDateString() === new Date().toDateString()
+      };
+    });
+  }, [appointments, patients]);
+  
+  const filteredAppointments = React.useMemo(() => {
+    const viewDate = selectedDate;
+    const startOfDay = new Date(viewDate);
+    startOfDay.setHours(0, 0, 0, 0);
+    
+    let endDate = new Date(viewDate);
+    endDate.setHours(23, 59, 59, 999);
+    
+    return enhancedAppointments.filter(apt => {
+      const aptDate = new Date(apt.when);
+      return aptDate >= startOfDay && aptDate <= endDate;
+    });
+  }, [enhancedAppointments, currentView, selectedDate]);
+  
+  const todayAppointments = React.useMemo(() => {
+    const today = new Date();
+    return enhancedAppointments.filter(apt => 
+      new Date(apt.when).toDateString() === today.toDateString()
+    ).sort((a, b) => new Date(a.when) - new Date(b.when));
+  }, [enhancedAppointments]);
   
   const handleAppointmentAction = (appointment, action) => {
     switch (action) {
@@ -504,6 +543,27 @@ export function Calendar() {
     );
   };
   
+  const renderViewSelector = () => (
+    <View style={styles.viewSelector}>
+      {['day', 'agenda'].map(view => (
+        <TouchableOpacity
+          key={view}
+          style={[styles.viewButton, currentView === view && styles.viewButtonActive]}
+          onPress={() => setCurrentView(view)}
+        >
+          <MaterialIcons 
+            name={view === 'day' ? 'today' : 'list'} 
+            size={16} 
+            color={currentView === view ? '#fff' : '#6c757d'} 
+          />
+          <Text style={[styles.viewButtonText, currentView === view && styles.viewButtonTextActive]}>
+            {view === 'day' ? 'Day View' : 'Agenda'}
+          </Text>
+        </TouchableOpacity>
+      ))}
+    </View>
+  );
+  
   const renderCurrentView = () => {
     switch (currentView) {
       case 'day':
@@ -544,6 +604,24 @@ export function Calendar() {
             onPress={() => {
               // Date picker would go here
               Alert.alert('Date Picker', 'Date picker would open here');
+            }}
+          >
+            <Text style={styles.datePickerText}>
+              {selectedDate.toLocaleDateString('en-IN', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+              })}
+            </Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={styles.navBtn}
+            onPress={() => {
+              const nextDate = new Date(selectedDate);
+              nextDate.setDate(nextDate.getDate() + 1);
+              setSelectedDate(nextDate);
             }}
           >
             <Text style={styles.selectedDateText}>
@@ -587,7 +665,7 @@ export function Calendar() {
           setTime('');
           setCustomAppointmentTitle('');
           setPatientSearchQuery('');
-          setPatientId(patients[0]?.id || '');
+          setPatientId(patients[0]?._id || patients[0]?.id || '');
           setAppointmentType('consultation');
           setDuration(30);
           setSelectedTimeSlot(null);
@@ -617,7 +695,7 @@ export function Calendar() {
                 setPatientSearchQuery('');
                 setSelectedAppointment(null);
                 setTime('');
-                setPatientId(patients[0]?.id || '');
+                setPatientId(patients[0]?._id || patients[0]?.id || '');
                 setAppointmentType('consultation');
                 setDuration(30);
                 setSelectedTimeSlot(null);
@@ -1026,108 +1104,110 @@ export function Calendar() {
                       </View>
                       
                       {showPatientSearch ? (
-                        <View style={styles.patientSearchContainer}>
-                          <View style={styles.patientSearchInput}>
-                            <MaterialIcons name="search" size={20} color="#6B7280" />
-                            <TextInput
-                              style={styles.searchInput}
-                              placeholder="Search patients by name..."
-                              value={patientSearchQuery}
-                              onChangeText={setPatientSearchQuery}
-                              placeholderTextColor="#9CA3AF"
-                            />
-                          </View>
-                          <ScrollView 
-                            style={styles.patientSearchResults}
-                            nestedScrollEnabled={true}
-                            showsVerticalScrollIndicator={true}
-                          >
-                            {patients
-                              .filter(p => p.name.toLowerCase().includes(patientSearchQuery.toLowerCase()))
-                              .map(p => (
-                                <TouchableOpacity
-                                  key={p.id}
-                                  style={[
-                                    styles.patientSearchItem,
-                                    patientId === p.id && styles.patientSearchItemSelected
-                                  ]}
-                                  onPress={() => {
-                                    setPatientId(p.id);
-                                    setShowPatientSearch(false);
-                                    setPatientSearchQuery('');
-                                  }}
-                                >
-                                  <View style={styles.patientSearchAvatar}>
-                                    <Text style={styles.patientSearchAvatarText}>
-                                      {p.name.charAt(0).toUpperCase()}
-                                    </Text>
-                                  </View>
-                                  <View style={styles.patientSearchInfo}>
-                                    <Text style={styles.patientSearchName}>{p.name}</Text>
-                                    <Text style={styles.patientSearchMeta}>
-                                      {p.age}y • {p.gender === 'M' ? 'Male' : 'Female'}
-                                    </Text>
-                                  </View>
-                                  {patientId === p.id && (
-                                    <MaterialIcons name="check" size={20} color="#4CAF50" />
-                                  )}
-                                </TouchableOpacity>
-                              ))
-                            }
-                          </ScrollView>
-                        </View>
-                      ) : (
-                        <View style={styles.patientQuickSelect}>
-                          <ScrollView 
-                            horizontal 
-                            showsHorizontalScrollIndicator={false}
-                            style={styles.patientCarousel}
-                          >
-                            {patients.slice(0, 5).map((p) => (
-                              <TouchableOpacity 
-                                key={p.id} 
-                                onPress={() => setPatientId(p.id)} 
-                                style={[
-                                  styles.patientCard, 
-                                  patientId === p.id && styles.patientCardActive
-                                ]}
-                              >
-                                <View style={[
-                                  styles.patientCardAvatar,
-                                  patientId === p.id && styles.patientCardAvatarActive
-                                ]}>
-                                  <Text style={[
-                                    styles.patientCardAvatarText,
-                                    patientId === p.id && styles.patientCardAvatarTextActive
-                                  ]}>
-                                    {p.name.charAt(0).toUpperCase()}
-                                  </Text>
-                                </View>
-                                <Text style={[
-                                  styles.patientCardName, 
-                                  patientId === p.id && styles.patientCardNameActive
-                                ]}>
-                                  {p.name.split(' ')[0]}
-                                </Text>
-                                <Text style={[
-                                  styles.patientCardMeta,
-                                  patientId === p.id && styles.patientCardMetaActive
-                                ]}>
-                                  {p.age}y
-                                </Text>
-                              </TouchableOpacity>
-                            ))}
-                          </ScrollView>
-                          
-                          <TouchableOpacity 
-                            style={styles.searchMorePatientsBtn}
-                            onPress={() => setShowPatientSearch(true)}
-                          >
-                            <MaterialIcons name="search" size={20} color="#1976D2" />
-                            <Text style={styles.searchMorePatientsText}>Search All Patients</Text>
-                          </TouchableOpacity>
-                        </View>
-                      )}
+  <View style={styles.patientSearchContainer}>
+    <View style={styles.patientSearchInput}>
+      <MaterialIcons name="search" size={20} color="#6B7280" />
+      <TextInput
+        style={styles.searchInput}
+        placeholder="Search patients by name..."
+        value={patientSearchQuery}
+        onChangeText={setPatientSearchQuery}
+        placeholderTextColor="#9CA3AF"
+      />
+    </View>
+
+    <ScrollView 
+      style={styles.patientSearchResults}
+      nestedScrollEnabled={true}
+      showsVerticalScrollIndicator={true}
+    >
+      {patients
+        .filter(p => p.name.toLowerCase().includes(patientSearchQuery.toLowerCase()))
+        .map(p => (
+          <TouchableOpacity
+            key={`patient-search-${p._id}`}   // ✅ use _id here
+            style={[
+              styles.patientSearchItem,
+              patientId === p._id && styles.patientSearchItemSelected
+            ]}
+            onPress={() => {
+              setPatientId(p._id);           // ✅ store only _id
+              setShowPatientSearch(false);
+              setPatientSearchQuery('');
+            }}
+          >
+            <View style={styles.patientSearchAvatar}>
+              <Text style={styles.patientSearchAvatarText}>
+                {p.name.charAt(0).toUpperCase()}
+              </Text>
+            </View>
+            <View style={styles.patientSearchInfo}>
+              <Text style={styles.patientSearchName}>{p.name}</Text>
+              <Text style={styles.patientSearchMeta}>
+                {p.age}y • {p.gender === 'M' ? 'Male' : 'Female'}
+              </Text>
+            </View>
+            {patientId === p._id && (
+              <MaterialIcons name="check" size={20} color="#4CAF50" />
+            )}
+          </TouchableOpacity>
+        ))
+      }
+    </ScrollView>
+  </View>
+) : (
+  <View style={styles.patientQuickSelect}>
+    <ScrollView 
+      horizontal 
+      showsHorizontalScrollIndicator={false}
+      style={styles.patientCarousel}
+    >
+      {patients.slice(0, 5).map((p) => (
+        <TouchableOpacity 
+          key={`patient-quick-${p._id}`}     // ✅ use _id
+          onPress={() => setPatientId(p._id)} 
+          style={[
+            styles.patientCard, 
+            patientId === p._id && styles.patientCardActive
+          ]}
+        >
+          <View style={[
+            styles.patientCardAvatar,
+            patientId === p._id && styles.patientCardAvatarActive
+          ]}>
+            <Text style={[
+              styles.patientCardAvatarText,
+              patientId === p._id && styles.patientCardAvatarTextActive
+            ]}>
+              {p.name.charAt(0).toUpperCase()}
+            </Text>
+          </View>
+          <Text style={[
+            styles.patientCardName, 
+            patientId === p._id && styles.patientCardNameActive
+          ]}>
+            {p.name.split(' ')[0]}
+          </Text>
+          <Text style={[
+            styles.patientCardMeta,
+            patientId === p._id && styles.patientCardMetaActive
+          ]}>
+            {p.age}y
+          </Text>
+        </TouchableOpacity>
+      ))}
+    </ScrollView>
+    
+    <TouchableOpacity 
+      style={styles.searchMorePatientsBtn}
+      onPress={() => setShowPatientSearch(true)}
+    >
+      <MaterialIcons name="search" size={20} color="#1976D2" />
+      <Text style={styles.searchMorePatientsText}>Search All Patients</Text>
+    </TouchableOpacity>
+  </View>
+)}
+
                     </View>
                   </>
                 )}
@@ -1146,7 +1226,7 @@ export function Calendar() {
                       setPatientSearchQuery('');
                       setSelectedAppointment(null);
                       setTime('');
-                      setPatientId(patients[0]?.id || '');
+                      setPatientId(patients[0]?._id || patients[0]?.id || '');
                       setAppointmentType('consultation');
                       setDuration(30);
                       setSelectedTimeSlot(null);
