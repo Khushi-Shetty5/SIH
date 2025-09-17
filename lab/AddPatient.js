@@ -8,36 +8,85 @@ export default function AddPatient({ navigation }) {
   const { addPatient } = useLab();
   const { show } = useToast();
   const [form, setForm] = useState({ id: "", name: "", age: "", gender: "", contact: "" });
+  const [loading, setLoading] = useState(false);
 
   const onChange = (key, value) => setForm((f) => ({ ...f, [key]: value }));
 
-  const onSave = () => {
-    if (!form.id || !form.name || !form.age || !form.gender || !form.contact) {
-      show("Please fill all fields", "danger");
+  const onSave = async () => {
+    if (!form.name || !form.age) {
+      show("Please fill required fields (Name and Age)", "danger");
       return;
     }
+    
     const ageNum = Number(form.age);
     if (Number.isNaN(ageNum) || ageNum <= 0) {
       show("Please enter a valid age", "danger");
       return;
     }
-    addPatient({ id: form.id.trim(), name: form.name.trim(), age: ageNum, gender: form.gender.trim(), contact: form.contact.trim() });
-    show("Patient added", "success");
-    navigation.goBack();
+    
+    setLoading(true);
+    try {
+      // Using a default doctor ID for demonstration
+      // In a real app, this would come from authentication
+      const doctorId = "68c81b568ecd90085701e053";
+      
+      const patientData = {
+        name: form.name.trim(),
+        age: ageNum,
+        gender: form.gender.trim() || "Not specified",
+        contact: form.contact.trim() || "Not provided",
+        history: ""
+      };
+      
+      await addPatient(patientData, doctorId);
+      show("Patient added successfully", "success");
+      navigation.goBack();
+    } catch (error) {
+      show("Failed to add patient: " + error.message, "danger");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
       <Text style={styles.heading}>➕ Add New Patient</Text>
-      <TextInput style={styles.input} placeholder="Patient ID" value={form.id} onChangeText={(t) => onChange("id", t)} />
-      <TextInput style={styles.input} placeholder="Name" value={form.name} onChangeText={(t) => onChange("name", t)} />
-      <TextInput style={styles.input} placeholder="Age" keyboardType="numeric" value={form.age} onChangeText={(t) => onChange("age", t)} />
-      <TextInput style={styles.input} placeholder="Gender" value={form.gender} onChangeText={(t) => onChange("gender", t)} />
-      <TextInput style={styles.input} placeholder="Contact" keyboardType="phone-pad" value={form.contact} onChangeText={(t) => onChange("contact", t)} />
+      <TextInput 
+        style={styles.input} 
+        placeholder="Full Name *" 
+        value={form.name} 
+        onChangeText={(t) => onChange("name", t)} 
+      />
+      <TextInput 
+        style={styles.input} 
+        placeholder="Age *" 
+        keyboardType="numeric" 
+        value={form.age} 
+        onChangeText={(t) => onChange("age", t)} 
+      />
+      <TextInput 
+        style={styles.input} 
+        placeholder="Gender" 
+        value={form.gender} 
+        onChangeText={(t) => onChange("gender", t)} 
+      />
+      <TextInput 
+        style={styles.input} 
+        placeholder="Contact" 
+        keyboardType="phone-pad" 
+        value={form.contact} 
+        onChangeText={(t) => onChange("contact", t)} 
+      />
 
-      <TouchableOpacity style={styles.saveBtn} onPress={onSave}>
+      <TouchableOpacity 
+        style={[styles.saveBtn, loading && styles.disabledBtn]} 
+        onPress={onSave}
+        disabled={loading}
+      >
         <AntDesign name="save" size={20} color="#fff" />
-        <Text style={styles.btnText}> Save Patient</Text>
+        <Text style={styles.btnText}>
+          {loading ? "Saving..." : " Save Patient"}
+        </Text>
       </TouchableOpacity>
     </ScrollView>
   );
@@ -61,6 +110,8 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     justifyContent: "center",
   },
+  disabledBtn: {
+    backgroundColor: "#a5d6a7",
+  },
   btnText: { color: "#fff", fontSize: 16, fontWeight: "600" },
 });
-

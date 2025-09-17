@@ -1,10 +1,22 @@
-import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, Dimensions } from "react-native";
+import React, { useState, useMemo } from "react";
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, Dimensions, TextInput } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useDoctor } from "../context/DoctorContext";
 
 export default function PatientListScreen({ navigation }) {
   const { patients } = useDoctor();
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Filter patients based on search query
+  const filteredPatients = useMemo(() => {
+    if (!searchQuery.trim()) return patients || [];
+    const query = searchQuery.toLowerCase();
+    return (patients || []).filter(
+      patient =>
+        patient.name.toLowerCase().includes(query) ||
+        (patient._id || patient.id || "").toLowerCase().includes(query)
+    );
+  }, [patients, searchQuery]);
 
   const renderPatientItem = ({ item }) => (
     <TouchableOpacity 
@@ -29,7 +41,25 @@ export default function PatientListScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      
+      
+      {/* Search Bar */}
+      <View style={styles.searchContainer}>
+        <Ionicons name="search" size={20} color="#6B7280" style={styles.searchIcon} />
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search by patient name or ID..."
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          placeholderTextColor="#9CA3AF"
+        />
+        {searchQuery.length > 0 && (
+          <TouchableOpacity onPress={() => setSearchQuery('')} style={styles.clearButton}>
+            <Ionicons name="close-circle" size={20} color="#6B7280" />
+          </TouchableOpacity>
+        )}
+      </View>
+        <View style={styles.header}>
         <TouchableOpacity 
           style={styles.addButton}
           onPress={() => navigation.navigate("AddPatient")}
@@ -38,9 +68,8 @@ export default function PatientListScreen({ navigation }) {
           <Text style={styles.addButtonText}>Add Patient</Text>
         </TouchableOpacity>
       </View>
-      
       <FlatList
-        data={patients}
+        data={filteredPatients}
         renderItem={renderPatientItem}
         keyExtractor={keyExtractor}
         contentContainerStyle={styles.listContainer}
@@ -48,7 +77,9 @@ export default function PatientListScreen({ navigation }) {
           <View style={styles.emptyContainer}>
             <Ionicons name="people-outline" size={48} color="#ccc" />
             <Text style={styles.emptyText}>No patients found</Text>
-            <Text style={styles.emptySubtext}>Add a new patient to get started</Text>
+            <Text style={styles.emptySubtext}>
+              {searchQuery ? "No matching patients found" : "Add a new patient to get started"}
+            </Text>
           </View>
         )}
       />
@@ -82,6 +113,28 @@ const styles = StyleSheet.create({
     color: "#fff",
     marginLeft: 6,
     fontWeight: "700",
+  },
+  searchContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+  },
+  searchIcon: {
+    marginRight: 8,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 16,
+    color: "#1F2937",
+  },
+  clearButton: {
+    padding: 4,
   },
   listContainer: {
     paddingBottom: 20,
@@ -146,5 +199,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#888",
     marginTop: 4,
+    textAlign: "center",
   },
 });

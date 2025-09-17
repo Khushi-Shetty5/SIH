@@ -26,7 +26,7 @@ export default function DoctorHomeScreen({ navigation }) {
     { key: "Patients", label: "Patients", icon: <Ionicons name="people" size={22} color="#2E86C1" />, route: "PatientList" },
     { key: "LabReports", label: "Lab Reports", icon: <MaterialIcons name="science" size={22} color="#2E86C1" />, route: "LabReports" },
     { key: "Medicines", label: "Medicines", icon: <FontAwesome5 name="pills" size={22} color="#2E86C1" />, route: "Medicines" },
-    { key: "VideoCall", label: "Video Call", icon: <Ionicons name="videocam" size={22} color="#2E86C1" />, route: null },
+    { key: "VideoCall", label: "Video Call", icon: <Ionicons name="videocam" size={22} color="#2E86C1" />, route: "VideoCall" },
     { key: "Calendar", label: "Calendar", icon: <Ionicons name="calendar" size={22} color="#2E86C1" />, route: "Calendar" },
   ];
 

@@ -68,19 +68,33 @@ export default function EmergencyScreen({ navigation }) {
   };
 
   // Handle save note
-  const handleSaveNote = () => {
+  const handleSaveNote = async () => {
+    console.log('Save note button clicked');
+    console.log('Note text:', noteText);
+    console.log('Selected emergency:', selectedEmergency);
+    
     if (!noteText.trim()) {
       Alert.alert('Error', 'Please enter a note');
       return;
     }
     
     const emergencyId = selectedEmergency._id || selectedEmergency.id;
-    addEmergencyNote(emergencyId, noteText.trim());
-    setShowNoteModal(false);
-    setNoteText('');
-    setSelectedEmergency(null);
-    Alert.alert('Success', 'Doctor note added successfully. Patient will be notified.');
+    console.log('Calling addEmergencyNote with ID:', emergencyId, 'and note:', noteText.trim());
+    
+    const result = await addEmergencyNote(emergencyId, noteText.trim());
+    
+    console.log('addEmergencyNote result:', result);
+    
+    if (result.success) {
+      setShowNoteModal(false);
+      setNoteText('');
+      setSelectedEmergency(null);
+      Alert.alert('Success', 'Doctor note added successfully. Patient will be notified.');
+    } else {
+      Alert.alert('Error', result.error || 'Failed to add note. Please try again.');
+    }
   };
+
 
   const renderEmergencyItem = ({ item }) => {
     // Handle both 'priority' and 'priority' field names from API

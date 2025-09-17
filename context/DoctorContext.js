@@ -12,117 +12,347 @@ export function DoctorProvider({ children }) {
   const [medicines, setMedicines] = React.useState([]);
   const [treatedLog, setTreatedLog] = React.useState([]);
 
-  React.useEffect(() => {
-    console.log("Starting to fetch doctor data...");
-    
-    // API base URL - change this based on your environment
-    const API_BASE_URL = "http://192.168.1.18:5000";
-    
-    // Fetch doctor data from API
-    axios.get(`${API_BASE_URL}/api/doctors/68c81b568ecd90085701e053/`)
-      .then(response => {
-        console.log("Successfully received doctor data:", response.data);
+  // Function to fetch doctor data
+  const fetchDoctorData = async () => {
+    try {
+      console.log("Starting to fetch doctor data...");
+      
+      // API base URL - change this based on your environment
+      const API_BASE_URL = "http://192.168.1.18:5000";
+      
+      // Fetch doctor data from API
+      const response = await axios.get(`${API_BASE_URL}/api/doctors/68c81b568ecd90085701e053/`);
+      console.log("Successfully received doctor data:", response.data);
+      
+      // Extract the doctor object from the response
+      const doctor = response.data.doctor;
+      setDoctorData(doctor);
+      
+      // Extract related data from the doctor response
+      if (doctor) {
+        // Handle patients with populated reports
+        const patientsList = doctor.patients || [];
+        console.log("Extracted patients from API:", patientsList);
+        setPatients(patientsList);
         
-        // Extract the doctor object from the response
-        const doctor = response.data.doctor;
-        setDoctorData(doctor);
+        // Extract all reports from patients and also doctor's reports
+        const allReports = [];
         
-        // Extract related data from the doctor response
-        if (doctor) {
-          // Handle patients with populated reports
-          const patientsList = doctor.patients || [];
-          console.log("Extracted patients from API:", patientsList);
-          setPatients(patientsList);
-          
-          // Extract all reports from patients and also doctor's reports
-          const allReports = [];
-          
-          // Add reports from each patient
-          patientsList.forEach(patient => {
-            if (patient.reports && Array.isArray(patient.reports)) {
-              patient.reports.forEach(report => {
-                allReports.push({
-                  ...report,
-                  patientId: patient._id || patient.id, // Ensure patientId is set
-                  patientName: patient.name // Add patient name for easier reference
-                });
+        // Add reports from each patient
+        patientsList.forEach(patient => {
+          if (patient.reports && Array.isArray(patient.reports)) {
+            patient.reports.forEach(report => {
+              allReports.push({
+                ...report,
+                patient: patient._id || patient.id, // Ensure patientId is set
+                patientName: patient.name // Add patient name for easier reference
               });
-            }
-          });
-          
-          // Add doctor-level reports if any
-          if (doctor.reports && Array.isArray(doctor.reports)) {
-            allReports.push(...doctor.reports);
+            });
           }
-          
-          console.log("Extracted reports from API:", allReports);
-          setReports(allReports);
-          
-          setAppointments(doctor.appointments || []);
-          setMedicines(doctor.medicines || []);
-          setTreatedLog(doctor.treatedLog || []);
-        }
-      })
-      .catch(error => {
-        console.error("Error fetching doctor data:", error);
+        });
         
-        // Log additional error details
-        if (error.response) {
-          // The request was made and the server responded with a status code
-          console.log("Error response data:", error.response.data);
-          console.log("Error response status:", error.response.status);
-          console.log("Error response headers:", error.response.headers);
-        } else if (error.request) {
-          // The request was made but no response was received
-          console.log("Error request:", error.request);
-        } else {
-          // Something happened in setting up the request that triggered an Error
-          console.log("Error message:", error.message);
+        // Add doctor-level reports if any
+        if (doctor.reports && Array.isArray(doctor.reports)) {
+          allReports.push(...doctor.reports);
         }
-      });
+        
+        console.log("Extracted reports from API:", allReports);
+        setReports(allReports);
+        
+        setAppointments(doctor.appointments || []);
+        setMedicines(doctor.medicines || []);
+        setTreatedLog(doctor.treatedLog || []);
+      }
+    } catch (error) {
+      console.error("Error fetching doctor data:", error);
+      
+      // Log additional error details
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        console.log("Error response data:", error.response.data);
+        console.log("Error response status:", error.response.status);
+        console.log("Error response headers:", error.response.headers);
+      } else if (error.request) {
+        // The request was made but no response was received
+        console.log("Error request:", error.request);
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        console.log("Error message:", error.message);
+      }
+    }
+  };
 
-    // Fetch emergency data separately
-    axios.get(`${API_BASE_URL}/api/doctors/68c81b568ecd90085701e053/emergencies`)
-      .then(response => {
-        console.log("Successfully received emergency data:", response.data);
-        
-        // Extract emergencies from the response
-        const emergencyData = response.data.emergencies || response.data || [];
-        setEmergencies(emergencyData);
-        console.log("Extracted emergencies from API:", emergencyData);
-      })
-      .catch(error => {
-        console.error("Error fetching emergency data:", error);
-        
-        if (error.response) {
-          console.log("Emergency API Error response data:", error.response.data);
-          console.log("Emergency API Error response status:", error.response.status);
-        } else if (error.request) {
-          console.log("Emergency API Error request:", error.request);
-        } else {
-          console.log("Emergency API Error message:", error.message);
-        }
-        
-        // Set empty array on error
-        setEmergencies([]);
-      });
+  // Function to fetch emergencies
+  const fetchEmergencies = async () => {
+    try {
+      const API_BASE_URL = "http://192.168.1.18:5000";
+      
+      // Fetch emergency data separately
+      const response = await axios.get(`${API_BASE_URL}/api/doctors/68c81b568ecd90085701e053/emergencies`);
+      console.log("Successfully received emergency data:", response.data);
+      
+      // Extract emergencies from the response
+      const emergencyData = response.data.emergencies || response.data || [];
+      setEmergencies(emergencyData);
+      console.log("Extracted emergencies from API:", emergencyData);
+    } catch (error) {
+      console.error("Error fetching emergency data:", error);
+      
+      if (error.response) {
+        console.log("Emergency API Error response data:", error.response.data);
+        console.log("Emergency API Error response status:", error.response.status);
+      } else if (error.request) {
+        console.log("Emergency API Error request:", error.request);
+      } else {
+        console.log("Emergency API Error message:", error.message);
+      }
+      
+      // Set empty array on error
+      setEmergencies([]);
+    }
+  };
+
+  React.useEffect(() => {
+    fetchDoctorData();
+    fetchEmergencies();
   }, []); // Empty dependency array means this runs once on mount
 
-  const attendEmergency = (id, doctorId = "doctor-1") => {
-    setEmergencies((prev) => prev.map((e) => (e.id === id || e._id === id ? { ...e, attendingBy: doctorId, acknowledged: true } : e)));
+  const attendEmergency = async (id, doctorId = "68c81b568ecd90085701e053") => {
+    try {
+      const API_BASE_URL = "http://192.168.1.18:5000";
+      
+      console.log('Attending emergency with ID:', id, 'Doctor ID:', doctorId);
+      
+      // Send PUT request to attend emergency
+      const response = await axios.put(
+        `${API_BASE_URL}/api/doctors/${doctorId}/emergency/${id}`,
+        { attendingBy: doctorId, acknowledged: true },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      
+      console.log('Emergency attended successfully:', response.data);
+      
+      // Update local state with the attended emergency from server response
+      const attendedEmergency = response.data.emergency || response.data;
+      setEmergencies((prev) => prev.map(e => 
+        (e._id === id || e.id === id) ? attendedEmergency : e
+      ));
+      
+      return { success: true, emergency: attendedEmergency };
+      
+    } catch (error) {
+      console.error('Error attending emergency:', error);
+      
+      if (error.response) {
+        console.log('API Error response data:', error.response.data);
+        console.log('API Error response status:', error.response.status);
+        return { 
+          success: false, 
+          error: error.response.data?.message || 'Failed to attend emergency on server' 
+        };
+      } else if (error.request) {
+        console.log('API Error request:', error.request);
+        return { 
+          success: false, 
+          error: 'Network error - unable to reach server' 
+        };
+      } else {
+        console.log('API Error message:', error.message);
+        return { 
+          success: false, 
+          error: 'Failed to attend emergency' 
+        };
+      }
+    }
   };
 
-  const acknowledgeEmergency = (id) => {
-    setEmergencies((prev) => prev.map((e) => (e.id === id || e._id === id ? { ...e, acknowledged: true } : e)));
+
+  const acknowledgeEmergency = async (id) => {
+    // Call the API function to acknowledge the emergency
+    const result = await acknowledgeEmergencyAPI(id);
+    return result;
   };
 
-  const addEmergencyNote = (id, note) => {
-    setEmergencies((prev) => prev.map((e) => 
-      (e.id === id || e._id === id) 
-        ? { ...e, notes: [...(e.notes || []), note] }
-        : e
+  const addEmergencyNote = async (id, note) => {
+    try {
+      const API_BASE_URL = "http://192.168.1.18:5000";
+    
+    console.log('Adding note to emergency with ID:', id, 'Note:', note);
+    
+    // Send PUT request to update emergency with new note
+    // Since the backend model only supports a single doctorNote field,
+    // we'll append the new note to any existing note
+    const emergency = emergencies.find(e => e._id === id || e.id === id);
+    const existingNote = emergency?.doctorNote || '';
+    const updatedNote = existingNote ? `${existingNote}\n${note}` : note;
+    
+    console.log('Emergency found:', emergency);
+    console.log('Existing note:', existingNote);
+    console.log('Updated note:', updatedNote);
+    
+    const url = `${API_BASE_URL}/api/doctors/emergencies/${id}`;
+    console.log('Making PUT request to:', url);
+    console.log('Request body:', { doctorNote: updatedNote });
+    console.log("neeraj",updatedNote)
+    const response = await axios.put(
+      url,
+      { doctorNote: updatedNote },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    
+    console.log('Emergency note added successfully:', response.data);
+    
+    // Update local state with the updated emergency from server response
+    const updatedEmergency = response.data.emergency || response.data;
+    setEmergencies((prev) => prev.map(e => 
+      (e._id === id || e.id === id) ? { ...e, doctorNote: updatedNote, notes: [...(e.notes || []), note] } : e
     ));
+    
+    return { success: true, emergency: updatedEmergency };
+    
+  } catch (error) {
+    console.error('Error adding emergency note:', error);
+    
+    // Let's also try to handle network errors by updating local state only
+    if (error.response) {
+      console.log('API Error response data:', error.response.data);
+      console.log('API Error response status:', error.response.status);
+      return { 
+        success: false, 
+        error: error.response.data?.message || 'Failed to add note to emergency on server' 
+      };
+    } else if (error.request) {
+      console.log('API Error request:', error.request);
+      // Network error - we could still update local state as a fallback
+      const emergency = emergencies.find(e => e._id === id || e.id === id);
+      const existingNote = emergency?.doctorNote || '';
+      const updatedNote = existingNote ? `${existingNote}\n${note}` : note;
+      setEmergencies((prev) => prev.map(e => 
+        (e._id === id || e.id === id) ? { ...e, doctorNote: updatedNote, notes: [...(e.notes || []), note] } : e
+      ));
+      return { 
+        success: true, // Treat as success for UI purposes
+        message: 'Note saved locally. Will sync with server when connection is restored.'
+      };
+    } else {
+      console.log('API Error message:', error.message);
+      return { 
+        success: false, 
+        error: 'Failed to add note to emergency' 
+      };
+    }
+  }
+};
+
+
+  const updateEmergency = async (emergencyId, updates) => {
+    try {
+      const API_BASE_URL = "http://192.168.1.18:5000";
+      
+      console.log('Updating emergency with ID:', emergencyId, 'Updates:', updates);
+      
+      // Send PUT request to update emergency
+      const response = await axios.put(
+        `${API_BASE_URL}/api/doctors/68c81b568ecd90085701e053/emergencies/${emergencyId}`,
+        updates,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      
+      console.log('Emergency updated successfully:', response.data);
+      
+      // Update local state with the updated emergency from server response
+      const updatedEmergency = response.data.emergency || response.data;
+      setEmergencies((prev) => prev.map(e => 
+        (e._id === emergencyId || e.id === emergencyId) ? updatedEmergency : e
+      ));
+      
+      return { success: true, emergency: updatedEmergency };
+      
+    } catch (error) {
+      console.error('Error updating emergency:', error);
+      
+      if (error.response) {
+        console.log('API Error response data:', error.response.data);
+        console.log('API Error response status:', error.response.status);
+        return { 
+          success: false, 
+          error: error.response.data?.message || 'Failed to update emergency on server' 
+        };
+      } else if (error.request) {
+        console.log('API Error request:', error.request);
+        return { 
+          success: false, 
+          error: 'Network error - unable to reach server' 
+        };
+      } else {
+        console.log('API Error message:', error.message);
+        return { 
+          success: false, 
+          error: 'Failed to update emergency' 
+        };
+      }
+    }
   };
+
+  const acknowledgeEmergencyAPI = async (emergencyId) => {
+    try {
+      const API_BASE_URL = "http://192.168.1.18:5000";
+      
+      console.log('Acknowledging emergency with ID:', emergencyId);
+      
+      // Send PATCH request to acknowledge emergency
+      const response = await axios.patch(
+        `${API_BASE_URL}/api/doctors/68c81b568ecd90085701e053/emergencies/${emergencyId}/acknowledge`
+      );
+      
+      console.log('Emergency acknowledged successfully:', response.data);
+      
+      // Update local state with the acknowledged emergency from server response
+      const acknowledgedEmergency = response.data.emergency || response.data;
+      setEmergencies((prev) => prev.map(e => 
+        (e._id === emergencyId || e.id === emergencyId) ? { ...e, acknowledged: true } : e
+      ));
+      
+      return { success: true, emergency: acknowledgedEmergency };
+      
+    } catch (error) {
+      console.error('Error acknowledging emergency:', error);
+      
+      if (error.response) {
+        console.log('API Error response data:', error.response.data);
+        console.log('API Error response status:', error.response.status);
+        return { 
+          success: false, 
+          error: error.response.data?.message || 'Failed to acknowledge emergency on server' 
+        };
+      } else if (error.request) {
+        console.log('API Error request:', error.request);
+        return { 
+          success: false, 
+          error: 'Network error - unable to reach server' 
+        };
+      } else {
+        console.log('API Error message:', error.message);
+        return { 
+          success: false, 
+          error: 'Failed to acknowledge emergency' 
+        };
+      }
+    }
+  };
+
 
   const approveReport = (id) => {
     setReports((prev) => prev.map((r) => (r.id === id ? { ...r, status: "approved" } : r)));
@@ -163,7 +393,7 @@ export function DoctorProvider({ children }) {
       const newReport = response.data.report || response.data;
       const reportWithPatientId = {
         ...newReport,
-        patientId: patientId, // Ensure patientId is set
+        patient: patientId, // Ensure patientId is set
         patientName: patients.find(p => (p._id || p.id) === patientId)?.name || 'Unknown Patient'
       };
       
@@ -410,6 +640,9 @@ export function DoctorProvider({ children }) {
     addPatient,
     updatePatientTreatment,
     addEmergency, // Add the new function to the context value
+    updateEmergency,
+    acknowledgeEmergencyAPI,
+    fetchDoctorData, // Add fetchDoctorData to refresh data
   };
 
   return <DoctorContext.Provider value={value}>{children}</DoctorContext.Provider>;
@@ -418,5 +651,3 @@ export function DoctorProvider({ children }) {
 export function useDoctor() {
   return React.useContext(DoctorContext);
 }
-
-

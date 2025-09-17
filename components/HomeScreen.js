@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator } from "react-native";
 import * as Print from "expo-print";
 import * as Sharing from "expo-sharing";
 import { Ionicons, MaterialIcons, AntDesign, FontAwesome5 } from "@expo/vector-icons";
@@ -34,9 +34,14 @@ function HeaderAvatarMenu({ onProfile, onLogout }) {
   );
 }
 
-function ActionTile({ color, icon, title, subtitle, onPress }) {
+function ActionTile({ color, icon, title, subtitle, onPress, disabled }) {
   return (
-    <TouchableOpacity onPress={onPress} activeOpacity={0.9} style={[tileStyles.tile, { backgroundColor: color }]}>
+    <TouchableOpacity 
+      onPress={onPress} 
+      activeOpacity={0.9} 
+      style={[tileStyles.tile, { backgroundColor: color }]}
+      disabled={disabled}
+    >
       <View style={tileStyles.decor} />
       <View style={tileStyles.left}>
         <View style={tileStyles.iconCircle}>{icon}</View>
@@ -53,7 +58,7 @@ function ActionTile({ color, icon, title, subtitle, onPress }) {
 }
 
 function HomeScreen({ navigation }) {
-  const { labWorker, logout, patients, reports } = useLab();
+  const { labWorker, logout, patients, reports, loading, error } = useLab();
 
   useEffect(() => {
     navigation.setOptions({
@@ -64,6 +69,35 @@ function HomeScreen({ navigation }) {
       ),
     });
   }, [navigation, logout]);
+
+  // Render loading state
+  if (loading && patients.length === 0) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#2E86C1" />
+        <Text style={styles.loadingText}>Loading lab data...</Text>
+      </View>
+    );
+  }
+
+  // Render error state
+  if (error) {
+    return (
+      <View style={styles.errorContainer}>
+        <MaterialIcons name="error" size={48} color="#dc3545" />
+        <Text style={styles.errorText}>Error loading data: {error}</Text>
+        <Text style={styles.errorSubtext}>Please check your connection and try again</Text>
+      </View>
+    );
+  }
+
+  // Main content - moved useMemo inside the render function to avoid hook order issues
+  const getRecentReports = () => {
+    const sorted = (reports || []).slice().sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    return sorted.slice(0, 4);
+  };
+
+  const recentReports = getRecentReports();
 
   return (
     <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
@@ -96,6 +130,7 @@ function HomeScreen({ navigation }) {
           title="Search Patient"
           subtitle="Find by ID or name"
           onPress={() => navigation.navigate("PatientSearch")}
+          disabled={loading}
         />
         <ActionTile
           color="#2E86C1"
@@ -103,6 +138,7 @@ function HomeScreen({ navigation }) {
           title="Add Patient"
           subtitle="Register new record"
           onPress={() => navigation.navigate("AddPatient")}
+          disabled={loading}
         />
         <ActionTile
           color="#28A745"
@@ -110,20 +146,26 @@ function HomeScreen({ navigation }) {
           title="Upload Report"
           subtitle="Manual or PDF"
           onPress={() => navigation.navigate("UploadReport")}
+          disabled={loading}
         />
       </View>
 
       <Text style={homeStyles.recentHeader}>Recent Reports</Text>
-      {useMemo(() => {
-        const sorted = (reports || []).slice().sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        return sorted.slice(0, 4);
-      }, [reports]).map((r) => {
-        const patient = patients?.find((p) => p.id === r.patientId);
+      {recentReports.map((r) => {
+        const patient = patients?.find((p) => p._id === r.patientId);
         return (
-          <View key={r.id} style={homeStyles.recentItem}>
+          <View key={r._id} style={homeStyles.recentItem}>
             <TouchableOpacity style={{ flex: 1 }} onPress={() => navigation.navigate("ReportDetail", { report: r })}>
-              <Text style={homeStyles.recentTitle}>{patient?.name || "Unknown Patient"} ({r.patientId})</Text>
+              <Text style={homeStyles.recentTitle}>{patient?.name || r.patientName || "Unknown Patient"} ({r.patientId})</Text>
               <Text style={homeStyles.recentMeta}>{r.title} {r.type === "pdf" ? "(PDF)" : ""} • {new Date(r.createdAt).toLocaleString()}</Text>
+              
+              {/* Show file attachment info */}
+              {r.files && r.files.length > 0 && (
+                <View style={homeStyles.fileInfo}>
+                  <MaterialIcons name="attachment" size={14} color="#6c757d" />
+                  <Text style={homeStyles.fileText}>{r.files.length} file(s) attached</Text>
+                </View>
+              )}
             </TouchableOpacity>
             <TouchableOpacity style={homeStyles.iconBtn} onPress={async () => {
               try {
@@ -135,15 +177,20 @@ function HomeScreen({ navigation }) {
                     <body style='font-family: -apple-system, Roboto, Arial; padding: 24px;'>
                       <h2>${r.title}</h2>
                       <p><b>Patient ID:</b> ${r.patientId}</p>
-                      <p><b>Uploaded by:</b> ${r.uploadedByName}</p>
+                      <p><b>Uploaded by:</b> ${r.uploadedByName || labWorker.name}</p>
                       <p><b>Date:</b> ${new Date(r.createdAt).toLocaleString()}</p>
                       <hr/>
                       <pre style='white-space: pre-wrap; font-size: 14px;'>${r.content || ""}</pre>
+                      ${r.files && r.files.length > 0 ? 
+                        `<p><b>Attached Files:</b></p>
+                         <ul>${r.files.map(file => `<li>${file}</li>`).join('')}</ul>` : ''}
                     </body></html>`;
                   const { uri } = await Print.printToFileAsync({ html });
                   await Sharing.shareAsync(uri);
                 }
-              } catch (e) {}
+              } catch (e) {
+                console.error("Error sharing report:", e);
+              }
             }}>
               <MaterialIcons name="download" size={20} color="#2E86C1" />
             </TouchableOpacity>
@@ -151,6 +198,13 @@ function HomeScreen({ navigation }) {
           </View>
         );
       })}
+      
+      {loading && (
+        <View style={styles.loadingIndicator}>
+          <ActivityIndicator size="small" color="#2E86C1" />
+          <Text style={styles.loadingText}>Updating data...</Text>
+        </View>
+      )}
     </ScrollView>
   );
 }
@@ -203,6 +257,43 @@ const styles = StyleSheet.create({
   grid: {
     flexDirection: "column",
     justifyContent: "flex-start",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#f8f9fa",
+    padding: 20,
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: "#6c757d",
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#f8f9fa",
+    padding: 20,
+  },
+  errorText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: "#dc3545",
+    textAlign: "center",
+  },
+  errorSubtext: {
+    marginTop: 5,
+    fontSize: 14,
+    color: "#6c757d",
+    textAlign: "center",
+  },
+  loadingIndicator: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 10,
   },
 });
 
@@ -268,6 +359,20 @@ const homeStyles = StyleSheet.create({
   },
   recentTitle: { color: "#2E4053", fontWeight: "700" },
   recentMeta: { color: "#6c757d", marginTop: 4, fontSize: 12 },
+  fileInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 4,
+  },
+  fileText: {
+    color: "#6c757d",
+    fontSize: 12,
+    marginLeft: 4,
+  },
+  iconBtn: {
+    padding: 8,
+    marginRight: 8,
+  },
 });
 
 const menuStyles = StyleSheet.create({

@@ -9,55 +9,36 @@ import {
   Modal,
   Alert,
   ScrollView,
+  ActivityIndicator,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
-
-// Mock data
-const mockPatients = [
-  { id: 'P001', name: 'Rajesh Kumar', age: 45, gender: 'Male' },
-  { id: 'P002', name: 'Priya Sharma', age: 32, gender: 'Female' },
-  { id: 'P003', name: 'Amit Singh', age: 28, gender: 'Male' },
-  { id: 'P004', name: 'Sunita Devi', age: 55, gender: 'Female' },
-];
-
-const mockReports = {
-  P001: [
-    {
-      id: 'R001',
-      title: 'Blood Test Report',
-      date: new Date(2024, 0, 15),
-      labName: 'Apollo Diagnostics',
-      notes: 'All parameters within normal range. Slight elevation in cholesterol levels.',
-      type: 'file',
-      fileName: 'blood_test_rajesh.pdf',
-    },
-  ],
-  P002: [
-    {
-      id: 'R003',
-      title: 'Pregnancy Test',
-      date: new Date(2024, 0, 20),
-      labName: 'Fortis Diagnostics',
-      notes: 'Positive result. Patient counseled about prenatal care.',
-      type: 'text',
-    },
-  ],
-};
+import { useDoctor } from '../context/DoctorContext';
 
 // Main Lab Records Screen
 const LabRecordsScreen = ({ navigation }) => {
+  const { patients, reports, loading } = useDoctor();
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Filter patients based on search query
   const filteredPatients = useMemo(() => {
-    if (!searchQuery.trim()) return mockPatients;
+    if (!searchQuery.trim()) return patients || [];
     const query = searchQuery.toLowerCase();
-    return mockPatients.filter(
+    return (patients || []).filter(
       patient =>
         patient.name.toLowerCase().includes(query) ||
-        patient.id.toLowerCase().includes(query)
+        patient._id.toLowerCase().includes(query)
     );
-  }, [searchQuery]);
+  }, [patients, searchQuery]);
+
+  // Get report count for each patient (including lab reports)
+  const getReportCount = (patientId) => {
+    return (reports || []).filter(report => {
+      // Check if report.patient is an object or string
+      const reportPatientId = typeof report.patient === 'object' ? report.patient._id : report.patient;
+      return reportPatientId === patientId;
+    }).length;
+  };
 
   const renderPatientCard = ({ item }) => (
     <TouchableOpacity
@@ -74,7 +55,7 @@ const LabRecordsScreen = ({ navigation }) => {
         
         <View style={styles.patientInfo}>
           <Text style={styles.patientName}>{item.name}</Text>
-          <Text style={styles.patientId}>ID: {item.id}</Text>
+          <Text style={styles.patientId}>ID: {item._id}</Text>
           <View style={styles.patientMeta}>
             <Text style={styles.metaText}>{item.age}y • {item.gender}</Text>
           </View>
@@ -82,13 +63,22 @@ const LabRecordsScreen = ({ navigation }) => {
         
         <View style={styles.reportCount}>
           <Text style={styles.reportCountNumber}>
-            {mockReports[item.id]?.length || 0}
+            {getReportCount(item._id)}
           </Text>
           <Text style={styles.reportCountLabel}>Reports</Text>
         </View>
       </View>
     </TouchableOpacity>
   );
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#3B82F6" />
+        <Text style={styles.loadingText}>Loading lab records...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -124,7 +114,7 @@ const LabRecordsScreen = ({ navigation }) => {
       <FlatList
         data={filteredPatients}
         renderItem={renderPatientCard}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item._id}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={() => (
@@ -141,42 +131,29 @@ const LabRecordsScreen = ({ navigation }) => {
 // Patient Reports Screen
 const PatientReportsScreen = ({ route }) => {
   const { patient } = route.params;
-  const [reports, setReports] = useState(mockReports[patient.id] || []);
+  const { reports, loading } = useDoctor();
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedReport, setSelectedReport] = useState(null);
   const [editNotes, setEditNotes] = useState('');
 
-  const handleAddReport = (newReport) => {
-    const reportWithId = {
-      ...newReport,
-      id: `R${Date.now()}`,
-      date: new Date(),
-    };
-    setReports(prev => [reportWithId, ...prev]);
-  };
-
-  const handleEditNotes = () => {
-    setReports(prev =>
-      prev.map(report =>
-        report.id === selectedReport.id
-          ? { ...report, notes: editNotes }
-          : report
-      )
-    );
-    setShowEditModal(false);
-    Alert.alert('Success', 'Notes updated successfully');
-  };
+  // Filter reports for this patient (including lab reports)
+  const patientReports = useMemo(() => {
+    return (reports || []).filter(report => {
+      // Check if report.patient is an object or string
+      const reportPatientId = typeof report.patient === 'object' ? report.patient._id : report.patient;
+      return reportPatientId === patient._id;
+    });
+  }, [reports, patient._id]);
 
   const handleViewDownload = (report) => {
-    if (report.type === 'file') {
-      Alert.alert('File Action', report.fileName, [
+    if (report.files && report.files.length > 0) {
+      Alert.alert('File Available', 'This report has attached files.', [
         { text: 'Cancel', style: 'cancel' },
-        { text: 'Download', onPress: () => Alert.alert('Download', 'File download initiated') },
-        { text: 'Share', onPress: () => Alert.alert('Share', 'File sharing initiated') }
+        { text: 'View Files', onPress: () => Alert.alert('View Files', 'File viewing functionality would be implemented here') }
       ]);
     } else {
-      Alert.alert('View Report', report.notes);
+      Alert.alert('View Report', report.content || 'No content available');
     }
   };
 
@@ -184,30 +161,39 @@ const PatientReportsScreen = ({ route }) => {
     <View style={styles.reportCard}>
       <View style={styles.reportHeader}>
         <MaterialIcons 
-          name={item.type === 'file' ? 'description' : 'notes'} 
+          name={item.files && item.files.length > 0 ? 'description' : 'notes'} 
           size={24} 
-          color={item.type === 'file' ? '#EF4444' : '#10B981'} 
+          color={item.uploadedByRole === 'LabDoctor' ? '#EF4444' : '#10B981'} 
         />
         <View style={styles.reportInfo}>
           <Text style={styles.reportTitle}>{item.title}</Text>
           <Text style={styles.reportDate}>
-            {item.date.toLocaleDateString('en-IN')}
+            {new Date(item.createdAt).toLocaleDateString('en-IN')}
           </Text>
-          {item.labName && (
-            <Text style={styles.reportLab}>📍 {item.labName}</Text>
+          {item.uploadedByRole === 'LabDoctor' && (
+            <Text style={styles.reportLab}>🔬 Lab Report</Text>
           )}
         </View>
         <Text style={[
           styles.typeChip,
-          { backgroundColor: item.type === 'file' ? '#FEE2E2' : '#DCFCE7' }
+          { backgroundColor: item.files && item.files.length > 0 ? '#FEE2E2' : '#DCFCE7' }
         ]}>
-          {item.type === 'file' ? 'FILE' : 'TEXT'}
+          {item.files && item.files.length > 0 ? 'FILE' : 'TEXT'}
         </Text>
       </View>
       
-      <Text style={styles.reportNotes} numberOfLines={2}>
-        {item.notes}
-      </Text>
+      {item.content && (
+        <Text style={styles.reportNotes} numberOfLines={2}>
+          {item.content}
+        </Text>
+      )}
+      
+      {item.files && item.files.length > 0 && (
+        <View style={styles.fileList}>
+          <MaterialIcons name="attachment" size={16} color="#6B7280" />
+          <Text style={styles.fileCount}>{item.files.length} file(s) attached</Text>
+        </View>
+      )}
       
       <View style={styles.reportActions}>
         <TouchableOpacity
@@ -216,24 +202,21 @@ const PatientReportsScreen = ({ route }) => {
         >
           <MaterialIcons name="visibility" size={16} color="#fff" />
           <Text style={styles.actionButtonText}>
-            {item.type === 'file' ? 'Download' : 'View'}
+            {item.files && item.files.length > 0 ? 'View Files' : 'View'}
           </Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity
-          style={[styles.actionButton, styles.editButton]}
-          onPress={() => {
-            setSelectedReport(item);
-            setEditNotes(item.notes);
-            setShowEditModal(true);
-          }}
-        >
-          <MaterialIcons name="edit" size={16} color="#fff" />
-          <Text style={styles.actionButtonText}>Edit Notes</Text>
         </TouchableOpacity>
       </View>
     </View>
   );
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#3B82F6" />
+        <Text style={styles.loadingText}>Loading reports...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -248,21 +231,21 @@ const PatientReportsScreen = ({ route }) => {
         <View style={styles.patientHeaderInfo}>
           <Text style={styles.patientHeaderName}>{patient.name}</Text>
           <Text style={styles.patientHeaderDetails}>
-            ID: {patient.id} • {patient.age}y • {patient.gender}
+            ID: {patient._id} • {patient.age}y • {patient.gender}
           </Text>
         </View>
         
         <View style={styles.reportsCount}>
-          <Text style={styles.reportsCountNumber}>{reports.length}</Text>
+          <Text style={styles.reportsCountNumber}>{patientReports.length}</Text>
           <Text style={styles.reportsCountLabel}>Reports</Text>
         </View>
       </View>
 
       {/* Reports List */}
       <FlatList
-        data={reports}
+        data={patientReports}
         renderItem={renderReportCard}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item._id}
         contentContainerStyle={styles.reportsListContent}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={() => (
@@ -274,234 +257,14 @@ const PatientReportsScreen = ({ route }) => {
       />
 
       {/* Floating Action Button */}
-      <TouchableOpacity
+      {/* <TouchableOpacity
         style={styles.fab}
         onPress={() => setShowAddModal(true)}
         activeOpacity={0.8}
       >
         <MaterialIcons name="add" size={28} color="#fff" />
-      </TouchableOpacity>
-
-      {/* Add Report Modal */}
-      <AddReportModal
-        visible={showAddModal}
-        onClose={() => setShowAddModal(false)}
-        onAddReport={handleAddReport}
-        patientName={patient.name}
-      />
-
-      {/* Edit Notes Modal */}
-      <Modal
-        visible={showEditModal}
-        animationType="slide"
-        presentationStyle="pageSheet"
-        onRequestClose={() => setShowEditModal(false)}
-      >
-        <View style={styles.editModalContainer}>
-          <View style={styles.editModalHeader}>
-            <TouchableOpacity onPress={() => setShowEditModal(false)}>
-              <MaterialIcons name="close" size={24} color="#6B7280" />
-            </TouchableOpacity>
-            <Text style={styles.editModalTitle}>Edit Notes</Text>
-            <TouchableOpacity onPress={handleEditNotes}>
-              <Text style={styles.saveButton}>Save</Text>
-            </TouchableOpacity>
-          </View>
-          
-          <View style={styles.editModalContent}>
-            <TextInput
-              style={styles.editNotesInput}
-              placeholder="Enter notes..."
-              value={editNotes}
-              onChangeText={setEditNotes}
-              multiline
-              numberOfLines={8}
-              textAlignVertical="top"
-            />
-          </View>
-        </View>
-      </Modal>
+      </TouchableOpacity> */}
     </View>
-  );
-};
-
-// Add Report Modal Component
-const AddReportModal = ({ visible, onClose, onAddReport, patientName }) => {
-  const [reportType, setReportType] = useState('text');
-  const [title, setTitle] = useState('');
-  const [notes, setNotes] = useState('');
-  const [labName, setLabName] = useState('');
-  const [selectedFile, setSelectedFile] = useState(null);
-
-  const resetForm = () => {
-    setReportType('text');
-    setTitle('');
-    setNotes('');
-    setLabName('');
-    setSelectedFile(null);
-  };
-
-  const handleClose = () => {
-    resetForm();
-    onClose();
-  };
-
-  const handleSubmit = () => {
-    if (!title.trim()) {
-      Alert.alert('Error', 'Please enter a report title');
-      return;
-    }
-
-    const newReport = {
-      title: title.trim(),
-      notes: notes.trim(),
-      labName: labName.trim(),
-      type: reportType,
-      ...(reportType === 'file' && {
-        fileName: selectedFile?.name || 'document.pdf',
-      }),
-    };
-
-    onAddReport(newReport);
-    handleClose();
-    Alert.alert('Success', 'Report added successfully!');
-  };
-
-  const handleFilePicker = async () => {
-    try {
-      const result = await DocumentPicker.getDocumentAsync({
-        type: ['application/pdf', 'image/*'],
-        copyToCacheDirectory: true,
-      });
-
-      if (!result.canceled && result.assets[0]) {
-        setSelectedFile(result.assets[0]);
-      }
-    } catch (error) {
-      Alert.alert('Error', 'Failed to pick file');
-    }
-  };
-
-  return (
-    <Modal
-      visible={visible}
-      animationType="slide"
-      presentationStyle="pageSheet"
-      onRequestClose={handleClose}
-    >
-      <View style={styles.addModalContainer}>
-        <View style={styles.addModalHeader}>
-          <TouchableOpacity onPress={handleClose}>
-            <MaterialIcons name="close" size={24} color="#6B7280" />
-          </TouchableOpacity>
-          <Text style={styles.addModalTitle}>Add Report</Text>
-          <TouchableOpacity onPress={handleSubmit}>
-            <Text style={styles.saveButton}>Add</Text>
-          </TouchableOpacity>
-        </View>
-
-        <ScrollView style={styles.addModalContent}>
-          <Text style={styles.addModalSubtitle}>Patient: {patientName}</Text>
-
-          {/* Report Type Selector */}
-          <View style={styles.typeSelector}>
-            <Text style={styles.sectionLabel}>Report Type</Text>
-            <View style={styles.typeSelectorButtons}>
-              <TouchableOpacity
-                style={[
-                  styles.typeButton,
-                  reportType === 'text' && styles.typeButtonActive
-                ]}
-                onPress={() => setReportType('text')}
-              >
-                <MaterialIcons name="notes" size={20} color={reportType === 'text' ? '#fff' : '#10B981'} />
-                <Text style={[
-                  styles.typeButtonText,
-                  reportType === 'text' && styles.typeButtonTextActive
-                ]}>
-                  Text Report
-                </Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity
-                style={[
-                  styles.typeButton,
-                  reportType === 'file' && styles.typeButtonActive
-                ]}
-                onPress={() => setReportType('file')}
-              >
-                <MaterialIcons name="description" size={20} color={reportType === 'file' ? '#fff' : '#EF4444'} />
-                <Text style={[
-                  styles.typeButtonText,
-                  reportType === 'file' && styles.typeButtonTextActive
-                ]}>
-                  File Upload
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          {/* Form Fields */}
-          <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Report Title *</Text>
-            <TextInput
-              style={styles.textInput}
-              placeholder="e.g., Blood Test Report"
-              value={title}
-              onChangeText={setTitle}
-            />
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Lab Name (Optional)</Text>
-            <TextInput
-              style={styles.textInput}
-              placeholder="e.g., Apollo Diagnostics"
-              value={labName}
-              onChangeText={setLabName}
-            />
-          </View>
-
-          {reportType === 'text' ? (
-            <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Report Notes *</Text>
-              <TextInput
-                style={[styles.textInput, styles.textArea]}
-                placeholder="Enter detailed report notes..."
-                value={notes}
-                onChangeText={setNotes}
-                multiline
-                numberOfLines={6}
-                textAlignVertical="top"
-              />
-            </View>
-          ) : (
-            <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>File Attachment *</Text>
-              <TouchableOpacity
-                style={styles.filePickerButton}
-                onPress={handleFilePicker}
-              >
-                <MaterialIcons name="cloud-upload" size={24} color="#3B82F6" />
-                <Text style={styles.filePickerText}>
-                  {selectedFile ? selectedFile.name : 'Select PDF or Image'}
-                </Text>
-              </TouchableOpacity>
-              
-              <TextInput
-                style={[styles.textInput, styles.textArea]}
-                placeholder="Add notes about the file (optional)..."
-                value={notes}
-                onChangeText={setNotes}
-                multiline
-                numberOfLines={4}
-                textAlignVertical="top"
-              />
-            </View>
-          )}
-        </ScrollView>
-      </View>
-    </Modal>
   );
 };
 
@@ -509,6 +272,18 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F8FAFC',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F8FAFC',
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: '#6B7280',
+    fontWeight: '500',
   },
   header: {
     flexDirection: 'row',
@@ -724,6 +499,16 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     marginBottom: 12,
   },
+  fileList: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  fileCount: {
+    fontSize: 12,
+    color: '#6B7280',
+    marginLeft: 4,
+  },
   reportActions: {
     flexDirection: 'row',
     gap: 8,
@@ -769,143 +554,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#6B7280',
     marginTop: 16,
-  },
-  // Modal Styles
-  addModalContainer: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  addModalHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-  },
-  addModalTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#1F2937',
-  },
-  saveButton: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#10B981',
-  },
-  addModalContent: {
-    flex: 1,
-    padding: 16,
-  },
-  addModalSubtitle: {
-    fontSize: 14,
-    color: '#6B7280',
-    marginBottom: 16,
-  },
-  typeSelector: {
-    marginBottom: 16,
-  },
-  sectionLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#1F2937',
-    marginBottom: 10,
-  },
-  typeSelectorButtons: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  typeButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 10,
-    borderRadius: 8,
-    borderWidth: 2,
-    borderColor: '#E5E7EB',
-  },
-  typeButtonActive: {
-    backgroundColor: '#10B981',
-    borderColor: '#10B981',
-  },
-  typeButtonText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#6B7280',
-    marginLeft: 4,
-  },
-  typeButtonTextActive: {
-    color: '#fff',
-  },
-  inputGroup: {
-    marginBottom: 14,
-  },
-  inputLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#1F2937',
-    marginBottom: 6,
-  },
-  textInput: {
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    borderRadius: 6,
-    padding: 10,
-    fontSize: 14,
-    color: '#1F2937',
-  },
-  textArea: {
-    minHeight: 80,
-    textAlignVertical: 'top',
-  },
-  filePickerButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: '#3B82F6',
-    borderStyle: 'dashed',
-    borderRadius: 6,
-    padding: 16,
-    marginBottom: 10,
-  },
-  filePickerText: {
-    fontSize: 14,
-    color: '#3B82F6',
-    marginLeft: 6,
-    fontWeight: '500',
-  },
-  editModalContainer: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  editModalHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-  },
-  editModalTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#1F2937',
-  },
-  editModalContent: {
-    flex: 1,
-    padding: 16,
-  },
-  editNotesInput: {
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    borderRadius: 6,
-    padding: 10,
-    fontSize: 14,
-    color: '#1F2937',
-    minHeight: 100,
-    textAlignVertical: 'top',
   },
 });
 
