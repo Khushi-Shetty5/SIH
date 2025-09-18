@@ -19,14 +19,15 @@
     {
       "android": {
         "gradlePluginVersion": "8.0.2",
-        "kotlinVersion": "2.0.21"
+        "kotlinVersion": "1.9.22"
       },
       "ios": {
         "useFrameworks": "static"
       }
     }
   ]
-],
+]
+,
 
     "cli": {
       "appVersionSource": "remote"
