@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, Alert, Dimensions } from 'react-native';
 import * as Speech from 'expo-speech';
-import * as SMS from 'expo-sms'; // Import expo-sms
 import { Ionicons } from '@expo/vector-icons';
 import { useLanguage } from '../languageConstants';
 
-const BACKEND_URL = 'http://192.168.117.168:3000'; // Replace with your backend server's IP
+const BACKEND_URL = 'http://192.168.117.168:3000';
 
 const SigninScreen = ({ navigation }) => {
   const { translations, language, ttsEnabled } = useLanguage();
@@ -69,57 +68,48 @@ const SigninScreen = ({ navigation }) => {
     }
   };
 
-  const generateOTP = () => {
-    return Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
-  };
-
   const handleSignin = async () => {
     if (!phone || !name) {
-      Alert.alert('Error', 'Please enter both name and phone number');
+      Alert.alert(
+        translations[language].sign_in || 'Error',
+        translations[language].signin_error || 'Please enter both name and phone number'
+      );
       return;
     }
     try {
-      // Check if SMS is available
-      const isAvailable = await SMS.isAvailableAsync();
-      if (!isAvailable) {
-        Alert.alert('Error', 'SMS is not available on this device. Please use a device with SMS capability.');
-        return;
-      }
-
-      // Check if phone exists in backend
       const response = await fetch(`${BACKEND_URL}/auth/signin`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone }),
+        body: JSON.stringify({ phone, name }),
       });
       const data = await response.json();
+      console.log('Signin response:', data); // Debug log
       if (response.ok) {
-        // Generate OTP locally
-        const otp = generateOTP();
-        // Store OTP in backend
-        const otpResponse = await fetch(`${BACKEND_URL}/auth/store-otp`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ phone, otp }),
-        });
-        const otpData = await otpResponse.json();
-        if (otpResponse.ok) {
-          // Send OTP via SMS
-          await SMS.sendSMSAsync([phone], `Your Nabha Hospital OTP is ${otp}`);
-          navigation.navigate('OTP', { phone });
-        } else {
-          Alert.alert('Error', otpData.error || 'Failed to store OTP');
+        if (!data.patientId) {
+          console.error('No patientId in response');
+          Alert.alert(
+            translations[language].sign_in || 'Error',
+            translations[language].signin_error || 'Sign-in failed: No patient ID returned'
+          );
+          return;
         }
+        console.log('Navigating to Dashboard with patientId:', data.patientId);
+        navigation.navigate('Dashboard', { patientId: data.patientId });
       } else {
-        Alert.alert('Error', data.error === 'Phone number not found' ? 'This phone number is not registered. Please sign up.' : data.error);
+        Alert.alert(
+          translations[language].sign_in || 'Error',
+          translations[language].signin_error || data.error
+        );
       }
     } catch (error) {
       console.error('Signin error:', error);
-      Alert.alert('Error', 'Failed to connect to server or send SMS. Check your network or SIM.');
+      Alert.alert(
+        translations[language].sign_in || 'Error',
+        translations[language].signin_error || 'Failed to connect to server. Check your network.'
+      );
     }
   };
 
-  // Styles remain unchanged
   const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#f8fafc' },
     content: {

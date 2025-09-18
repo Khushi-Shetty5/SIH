@@ -6,11 +6,30 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
+    },
+    "plugins": [
+      "expo-dev-client",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "gradlePluginVersion": "8.0.2",
+            "kotlinVersion": "1.9.10"
+          },
+          "ios": {
+            "useFrameworks": "static"
+          }
+        }
+      ]
+    ],
+    "cli": {
+      "appVersionSource": "remote" 
+      
     },
     "ios": {
       "supportsTablet": true
@@ -21,7 +40,14 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "permissions": ["SEND_SMS"]
+      "permissions": [
+        "CAMERA",
+        "RECORD_AUDIO",
+        "MODIFY_AUDIO_SETTINGS",
+        "WRITE_EXTERNAL_STORAGE",
+        "SEND_SMS"
+      ],
+      "package": "com.anonymous.xtry"
     },
     "web": {
       "favicon": "./assets/favicon.png"

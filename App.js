@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Dimensions } from 'react-native';
+import { StyleSheet, Dimensions, TouchableOpacity, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { LanguageProvider } from './src/languageConstants';
 import SplashScreen from './src/screens/SplashScreen';
 import UserTypeSelectionScreen from './src/screens/UserTypeSelectionScreen';
@@ -10,11 +11,11 @@ import LanguageSelectionScreen from './src/screens/LanguageSelectionScreen';
 import SigninScreen from './src/screens/SignInScreen';
 import SignupScreen from './src/screens/SignupScreen';
 import OTPScreen from './src/screens/OTPScreen';
-import HomeScreen from './src/screens/HomeScreen';
+import DashboardScreen from './src/screens/DashboardScreen';
+import VideoConsultationScreen from './src/screens/VideoConsultationScreen';
 import AppointmentBookingScreen from './src/screens/AppointmentBookingScreen';
 import MedicineSearchScreen from './src/screens/MedicineSearchScreen';
 import DoctorAvailabilityScreen from './src/screens/DoctorAvailabilityScreen';
-import VideoConferenceScreen from './src/screens/VideoConferenceScreen';
 import ChatScreen from './src/screens/ChatScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
 
@@ -22,6 +23,10 @@ const Stack = createStackNavigator();
 
 export default function App() {
   const windowHeight = Dimensions.get('window').height;
+
+  useEffect(() => {
+    console.log('App: TouchableOpacity available:', !!TouchableOpacity);
+  }, []);
 
   const styles = StyleSheet.create({
     headerTitle: {
@@ -75,9 +80,28 @@ export default function App() {
             options={{ headerShown: false }}
           />
           <Stack.Screen
-            name="Home"
-            component={HomeScreen}
+            name="Dashboard"
+            component={DashboardScreen}
             options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="VideoConsultation"
+            component={VideoConsultationScreen}
+            options={({ navigation }) => ({
+              title: 'Video Consultation',
+              headerShown: true,
+              headerLeft: () => (
+                <TouchableOpacity
+                  onPress={() => {
+                    console.log('Header back button pressed');
+                    navigation.goBack();
+                  }}
+                  style={{ marginLeft: 10 }}
+                >
+                  <Ionicons name="arrow-back" size={24} color="#1e293b" />
+                </TouchableOpacity>
+              ),
+            })}
           />
           <Stack.Screen
             name="AppointmentBooking"
@@ -93,11 +117,6 @@ export default function App() {
             name="DoctorAvailability"
             component={DoctorAvailabilityScreen}
             options={{ title: 'Doctor Availability' }}
-          />
-          <Stack.Screen
-            name="VideoConference"
-            component={VideoConferenceScreen}
-            options={{ title: 'Video Conference' }}
           />
           <Stack.Screen
             name="Chat"

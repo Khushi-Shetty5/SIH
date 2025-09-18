@@ -17,6 +17,7 @@ const translations = {
     sign_in: 'Sign In',
     no_account: "Don't have an account? ",
     sign_up_link: 'Sign up',
+    signin_error: 'Invalid name or phone number. Please try again or sign up.',
 
     // SignupScreen
     create_account: 'Create Account',
@@ -49,6 +50,27 @@ const translations = {
     resend_otp: 'Resend OTP',
     invalid_otp: 'Invalid OTP. Please try again.',
     enter_valid_otp: 'Please enter a valid 6-digit OTP',
+
+    // DashboardScreen
+    searchPlaceholder: 'Search...',
+    checkDoctorAvailability: 'Check Doctor Availability',
+    bookAppointment: 'Book Appointment',
+    searchMedicine: 'Search Medicine',
+    videoConference: 'Video Conference',
+    upcomingAppointments: 'Upcoming Appointments',
+    viewAll: 'View All',
+    noAppointments: 'No upcoming appointments.',
+    joinVideoCall: 'Join Video Call',
+    pending: 'Pending',
+
+    // VideoConsultationScreen
+    videoConsultationTitle: 'Video Consultation',
+    joinVideoCallPrompt: 'Are you ready to start the video call with {doctorName} at {time}?',
+    cancel: 'Cancel',
+    failedToJoin: 'Failed to join video call. Please try again.',
+
+    // HeaderBar
+    tollFree: 'Toll Free: 1800-123-4567',
   },
   Hindi: {
     // LanguageSelectionScreen
@@ -66,6 +88,7 @@ const translations = {
     sign_in: 'साइन इन',
     no_account: 'कोई खाता नहीं है? ',
     sign_up_link: 'साइन अप करें',
+    signin_error: 'अमान्य नाम या फोन नंबर। कृपया पुनः प्रयास करें या साइन अप करें।',
 
     // SignupScreen
     create_account: 'खाता बनाएं',
@@ -98,6 +121,27 @@ const translations = {
     resend_otp: 'ओटीपी पुनः भेजें',
     invalid_otp: 'अमान्य ओटीपी। कृपया पुनः प्रयास करें।',
     enter_valid_otp: 'कृपया एक वैध 6-अंकीय ओटीपी दर्ज करें',
+
+    // DashboardScreen
+    searchPlaceholder: 'खोजें...',
+    checkDoctorAvailability: 'डॉक्टर की उपलब्धता जांचें',
+    bookAppointment: 'अपॉइंटमेंट बुक करें',
+    searchMedicine: 'दवा खोजें',
+    videoConference: 'वीडियो कॉन्फ्रेंस',
+    upcomingAppointments: 'आगामी अपॉइंटमेंट',
+    viewAll: 'सभी देखें',
+    noAppointments: 'कोई आगामी अपॉइंटमेंट नहीं।',
+    joinVideoCall: 'वीडियो कॉल में शामिल हों',
+    pending: 'लंबित',
+
+    // VideoConsultationScreen
+    videoConsultationTitle: 'वीडियो परामर्श',
+    joinVideoCallPrompt: 'क्या आप {doctorName} के साथ {time} पर वीडियो कॉल शुरू करने के लिए तैयार हैं?',
+    cancel: 'रद्द करें',
+    failedToJoin: 'वीडियो कॉल में शामिल होने में विफल। कृपया पुनः प्रयास करें।',
+
+    // HeaderBar
+    tollFree: 'टोल फ्री: 1800-123-4567',
   },
   Punjabi: {
     // LanguageSelectionScreen
@@ -115,6 +159,7 @@ const translations = {
     sign_in: 'ਸਾਈਨ ਇਨ',
     no_account: 'ਕੋਈ ਖਾਤਾ ਨਹੀਂ ਹੈ? ',
     sign_up_link: 'ਸਾਈਨ ਅਪ ਕਰੋ',
+    signin_error: 'ਅਵੈਧ ਨਾਮ ਜਾਂ ਫੋਨ ਨੰਬਰ। ਕਿਰਪਾ ਕਰਕੇ ਮੁੜ ਕੋਸ਼ਿਸ਼ ਕਰੋ ਜਾਂ ਸਾਈਨ ਅਪ ਕਰੋ।',
 
     // SignupScreen
     create_account: 'ਖਾਤਾ ਬਣਾਓ',
@@ -147,6 +192,27 @@ const translations = {
     resend_otp: 'ਓਟੀਪੀ ਮੁੜ ਭੇਜੋ',
     invalid_otp: 'ਅਵੈਧ ਓਟੀਪੀ। ਕਿਰਪਾ ਕਰਕੇ ਮੁੜ ਕੋਸ਼ਿਸ਼ ਕਰੋ।',
     enter_valid_otp: 'ਕਿਰਪਾ ਕਰਕੇ ਇੱਕ ਵੈਧ 6-ਅੰਕੀ ਓਟੀਪੀ ਦਰਜ ਕਰੋ',
+
+    // DashboardScreen
+    searchPlaceholder: 'ਖੋਜ...',
+    checkDoctorAvailability: 'ਡਾਕਟਰ ਦੀ ਉਪਲਬਧਤਾ ਜਾਂਚ ਕਰੋ',
+    bookAppointment: 'ਅਪਾਇੰਟਮੈਂਟ ਬੁੱਕ ਕਰੋ',
+    searchMedicine: 'ਦਵਾਈ ਖੋਜੋ',
+    videoConference: 'ਵੀਡੀਓ ਕਾਨਫਰੰਸ',
+    upcomingAppointments: 'ਆਗਾਮੀ ਅਪਾਇੰਟਮੈਂਟ',
+    viewAll: 'ਸਭ ਦੇਖੋ',
+    noAppointments: 'ਕੋਈ ਆਗਾਮੀ ਅਪਾਇੰਟਮੈਂਟ ਨਹੀਂ।',
+    joinVideoCall: 'ਵੀਡੀਓ ਕਾਲ ਵਿੱਚ ਸ਼ਾਮਲ ਹੋਵੋ',
+    pending: 'ਬਕਾਇਆ',
+
+    // VideoConsultationScreen
+    videoConsultationTitle: 'ਵੀਡੀਓ ਸਲਾਹ',
+    joinVideoCallPrompt: 'ਕੀ ਤੁਸੀਂ {doctorName} ਨਾਲ {time} ਵਜੇ ਵੀਡੀਓ ਕਾਲ ਸ਼ੁਰੂ ਕਰਨ ਲਈ ਤਿਆਰ ਹੋ?',
+    cancel: 'ਰੱਦ ਕਰੋ',
+    failedToJoin: 'ਵੀਡੀਓ ਕਾਲ ਵਿੱਚ ਸ਼ਾਮਲ ਹੋਣ ਵਿੱਚ ਅਸਫਲ। ਕਿਰਪਾ ਕਰਕੇ ਮੁੜ ਕੋਸ਼ਿਸ਼ ਕਰੋ।',
+
+    // HeaderBar
+    tollFree: 'ਟੋਲ ਫ੍ਰੀ: 1800-123-4567',
   },
 };
 
@@ -155,7 +221,7 @@ const LanguageContext = createContext();
 
 export const LanguageProvider = ({ children }) => {
   const [language, setLanguage] = useState('English');
-  const [ttsEnabled, setTtsEnabled] = useState(false); // TTS toggle state
+  const [ttsEnabled, setTtsEnabled] = useState(false);
 
   return (
     <LanguageContext.Provider value={{ language, setLanguage, ttsEnabled, setTtsEnabled, translations }}>
