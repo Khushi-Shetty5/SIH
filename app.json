@@ -6,37 +6,31 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-
-    
     "newArchEnabled": false,
-
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-
     "plugins": [
-      "expo-dev-client",
-      [
-        "expo-build-properties",
-        {
-          "android": {
-            "gradlePluginVersion": "8.0.2",
-            "kotlinVersion": "1.9.10"
-          },
-          "ios": {
-            "useFrameworks": "static"
-          }
-        }
-      ]
-    ],
+  "expo-dev-client",
+  [
+    "expo-build-properties",
+    {
+      "android": {
+        "gradlePluginVersion": "8.0.2",
+        "kotlinVersion": "2.0.21"
+      },
+      "ios": {
+        "useFrameworks": "static"
+      }
+    }
+  ]
+],
 
     "cli": {
-      
       "appVersionSource": "remote"
     },
-
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
@@ -45,7 +39,6 @@
       },
       "bundleIdentifier": "com.anonymous.xtry"
     },
-
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
@@ -61,9 +54,13 @@
       ],
       "package": "com.anonymous.xtry"
     },
-
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "60e8af83-77f7-44be-aefb-6a9f673afb56"
+      }
     }
   }
 }
