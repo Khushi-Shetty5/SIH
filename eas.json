@@ -1,4 +1,7 @@
 {
+  "cli": {
+    "version": ">= 0.38.2"
+  },
   "build": {
     "development": {
       "developmentClient": true,
@@ -10,8 +13,13 @@
         "simulator": true
       }
     },
+    "preview": {
+      "distribution": "internal"
+    },
     "production": {
-      "distribution": "store"
+      "android": {
+        "buildType": "app-bundle"
+      }
     }
   }
 }

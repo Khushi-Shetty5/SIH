@@ -6,12 +6,16 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
+
+    
     "newArchEnabled": false,
+
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+
     "plugins": [
       "expo-dev-client",
       [
@@ -27,13 +31,21 @@
         }
       ]
     ],
+
     "cli": {
-      "appVersionSource": "remote" 
       
+      "appVersionSource": "remote"
     },
+
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app uses the camera for video calls.",
+        "NSMicrophoneUsageDescription": "This app uses the microphone for audio in video calls."
+      },
+      "bundleIdentifier": "com.anonymous.xtry"
     },
+
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
@@ -45,10 +57,11 @@
         "RECORD_AUDIO",
         "MODIFY_AUDIO_SETTINGS",
         "WRITE_EXTERNAL_STORAGE",
-        "SEND_SMS"
+        "INTERNET"
       ],
       "package": "com.anonymous.xtry"
     },
+
     "web": {
       "favicon": "./assets/favicon.png"
     }
