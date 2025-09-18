@@ -10,6 +10,7 @@ import UserTypeSelectionScreen from './src/screens/UserTypeSelectionScreen';
 import LanguageSelectionScreen from './src/screens/LanguageSelectionScreen';
 import SigninScreen from './src/screens/SignInScreen';
 import SignupScreen from './src/screens/SignupScreen';
+import ProfileScreen from './src/screens/ProfileScreen';
 import OTPScreen from './src/screens/OTPScreen';
 import DashboardScreen from './src/screens/DashboardScreen';
 import VideoConsultationScreen from './src/screens/VideoConsultationScreen';
@@ -69,6 +70,7 @@ export default function App() {
             component={SigninScreen}
             options={{ headerShown: false }}
           />
+          <Stack.Screen name="Profile" component={ProfileScreen} />
           <Stack.Screen
             name="Signup"
             component={SignupScreen}

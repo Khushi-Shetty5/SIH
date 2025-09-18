@@ -6,46 +6,43 @@ import {
   TouchableOpacity,
   StyleSheet,
   SafeAreaView,
-  Alert,
   ScrollView,
+  Alert,
   Dimensions,
 } from 'react-native';
+import { Picker } from '@react-native-picker/picker';
 import * as Speech from 'expo-speech';
 import * as SMS from 'expo-sms';
 import { Ionicons } from '@expo/vector-icons';
-import { Picker } from '@react-native-picker/picker';
 import { useLanguage } from '../languageConstants';
+import axios from 'axios';
 
-const BACKEND_URL = 'http://192.168.117.168:3000'; // Replace with your backend server's IP
-const genders = ['Male', 'Female', 'Other'];
-const languages = [
-  { name: 'English', display: 'English' },
-  { name: 'Hindi', display: 'हिन्दी' },
-  { name: 'Punjabi', display: 'ਪੰਜਾਬੀ' },
-];
+const BACKEND_URL = 'http://192.168.118.168:3000';
 
 const SignupScreen = ({ navigation }) => {
-  const { translations, language, ttsEnabled } = useLanguage();
-  const [name, setName] = useState('');
-  const [age, setAge] = useState('');
-  const [gender, setGender] = useState('');
-  const [languageSelected, setLanguageSelected] = useState('');
-  const [contact, setContact] = useState('');
-  const [address, setAddress] = useState('');
-  const [healthRecords, setHealthRecords] = useState('');
-  const [currentMedications, setCurrentMedications] = useState('');
-  const [emergencyContact, setEmergencyContact] = useState('');
-  const [emergencyRelation, setEmergencyRelation] = useState('');
-  const [disabilityStatus, setDisabilityStatus] = useState('');
-  const [healthParameters, setHealthParameters] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [consent, setConsent] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const { translations, language, changeLanguage, ttsEnabled, setTtsEnabled } = useLanguage();
+  const [formData, setFormData] = useState({
+    name: '',
+    phone: '',
+    countryCode: '+91',
+    age: '',
+    gender: '',
+    language: 'English',
+    address: '',
+    emergencyContact: '',
+    emergencyCountryCode: '+91',
+    emergencyRelation: '',
+    disabilityStatus: '',
+    healthParameters: '',
+    password: '',
+    confirmPassword: '',
+  });
   const [windowWidth, setWindowWidth] = useState(Dimensions.get('window').width);
   const [windowHeight, setWindowHeight] = useState(Dimensions.get('window').height);
   const [orientation, setOrientation] = useState(windowWidth > windowHeight ? 'landscape' : 'portrait');
+  const [isSendingOTP, setIsSendingOTP] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useEffect(() => {
     const updateDimensions = () => {
@@ -76,11 +73,18 @@ const SignupScreen = ({ navigation }) => {
       const isLangSupported = availableVoices.some((voice) => voice.language === preferredLang);
       if (!isLangSupported) {
         speechLang = 'en-US';
+        Alert.alert('Language Notice', `Voice for ${language} not available. Using English voice.`, [{ text: 'OK' }]);
       }
-      const textToSpeak = `${translations[language].create_account}. ${translations[language].join_medkit}. ${translations[language].full_name_placeholder}. ${translations[language].age_placeholder}. ${translations[language].select_gender}. ${translations[language].select_language}. ${translations[language].contact_placeholder}.`;
-      Speech.speak(textToSpeak, { language: speechLang, pitch: 1.0, rate: 0.5 });
+      const textToSpeak = `${translations[language]?.create_account || 'Create Account'}. ${translations[language]?.join_medkit || 'Join MedKit to manage your health appointments seamlessly'}.`;
+      Speech.speak(textToSpeak, {
+        language: speechLang,
+        pitch: 1.0,
+        rate: 0.7,
+        onError: (error) => console.error('TTS Error:', error),
+      });
     } catch (error) {
       console.error('TTS Error:', error);
+      Alert.alert('Audio Error', 'Text-to-Speech failed. Ensure your device supports TTS.', [{ text: 'OK' }]);
     }
   };
 
@@ -95,493 +99,690 @@ const SignupScreen = ({ navigation }) => {
       if (!isLangSupported) {
         speechLang = 'en-US';
       }
-      Speech.speak(text, { language: speechLang, pitch: 1.0, rate: 0.5 });
+      Speech.speak(text, {
+        language: speechLang,
+        pitch: 1.0,
+        rate: 0.7,
+        onError: (error) => console.error('TTS Error:', error),
+      });
     } catch (error) {
       console.error('TTS Error:', error);
     }
   };
 
   const generateOTP = () => {
-    return Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
+    return Math.floor(100000 + Math.random() * 900000).toString();
   };
 
-  const handleSignup = async () => {
-    if (
-      !name ||
-      !age ||
-      !gender ||
-      !languageSelected ||
-      !contact ||
-      !address ||
-      !emergencyContact ||
-      !emergencyRelation ||
-      !password ||
-      !confirmPassword
-    ) {
-      Alert.alert('Error', 'Please fill in all required fields');
-      return;
+  const handleInputChange = (field, value) => {
+    setFormData({ ...formData, [field]: value });
+    if (field === 'language') {
+      changeLanguage(value);
+      if (ttsEnabled) {
+        playText(`${translations[value]?.language_label || 'Language'}: ${value}`);
+      }
     }
-    if (password !== confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match');
-      return;
+    if (ttsEnabled && translations[language]?.[`${field}_placeholder`]) {
+      playText(translations[language][`${field}_placeholder`]);
     }
-    if (!consent) {
-      Alert.alert('Error', 'Please consent to store health data');
-      return;
-    }
-    if (!contact.startsWith('+') || contact.length < 12) {
-      Alert.alert('Error', 'Phone number must include country code (e.g., +919876543210)');
-      return;
-    }
-    if (!emergencyContact.startsWith('+') || emergencyContact.length < 12) {
-      Alert.alert('Error', 'Emergency contact must include country code (e.g., +919876543211)');
-      return;
+  };
+
+  const validateForm = () => {
+    const requiredFields = {
+      name: translations[language]?.full_name_placeholder || 'Full Name',
+      phone: translations[language]?.contact_placeholder || 'Phone Number',
+      age: translations[language]?.age_placeholder || 'Age',
+      gender: translations[language]?.select_gender || 'Gender',
+      language: translations[language]?.select_language || 'Language',
+      address: translations[language]?.address_placeholder || 'Address',
+      emergencyContact: translations[language]?.emergency_contact_placeholder || 'Emergency Contact',
+      emergencyRelation: translations[language]?.emergency_relation_placeholder || 'Emergency Relation',
+      password: translations[language]?.password_placeholder || 'Password',
+      confirmPassword: translations[language]?.confirm_password_placeholder || 'Confirm Password',
+    };
+
+    for (const [field, label] of Object.entries(requiredFields)) {
+      if (!formData[field]?.trim()) {
+        return { valid: false, message: `${translations[language]?.enter_field || 'Please enter'} ${label}` };
+      }
     }
 
+    const fullPhone = `${formData.countryCode}${formData.phone}`;
+    const fullEmergencyContact = `${formData.emergencyCountryCode}${formData.emergencyContact}`;
+    const phoneRegex = /^\+\d{1,3}\d{10}$/;
+    if (!phoneRegex.test(fullPhone)) {
+      return { valid: false, message: translations[language]?.invalid_phone || 'Invalid phone number format' };
+    }
+    if (!phoneRegex.test(fullEmergencyContact)) {
+      return { valid: false, message: translations[language]?.invalid_emergency_phone || 'Invalid emergency contact number format' };
+    }
+
+    const ageNum = parseInt(formData.age);
+    if (isNaN(ageNum) || ageNum < 1 || ageNum > 150) {
+      return { valid: false, message: translations[language]?.invalid_age || 'Please enter a valid age (1-150)' };
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      return { valid: false, message: translations[language]?.password_mismatch || 'Passwords do not match' };
+    }
+
+    return { valid: true };
+  };
+
+  const handleGetOTP = async () => {
+    if (isSendingOTP) return;
+    const validation = validateForm();
+    if (!validation.valid) {
+      Alert.alert(translations[language]?.error || 'Error', validation.message);
+      setIsSendingOTP(false);
+      return;
+    }
+    setIsSendingOTP(true);
     try {
-      // Check SMS availability
-      const isAvailable = await SMS.isAvailableAsync();
-      if (!isAvailable) {
-        Alert.alert('Error', 'SMS is not available on this device. Please use a device with SMS capability.');
+      const fullPhone = `${formData.countryCode}${formData.phone}`;
+      const fullEmergencyContact = `${formData.emergencyCountryCode}${formData.emergencyContact}`;
+      
+      console.log('📱 Full phone for OTP:', fullPhone);
+      console.log('📱 Full emergency contact:', fullEmergencyContact);
+
+      const checkResponse = await axios.post(`${BACKEND_URL}/auth/request-signup-otp`, {
+        ...formData,
+        phone: fullPhone,
+        emergencyContact: fullEmergencyContact,
+      });
+      
+      console.log('✅ Validation response:', checkResponse.data);
+      
+      if (checkResponse.status !== 200) {
+        Alert.alert(
+          translations[language]?.error || 'Error',
+          checkResponse.data.error || 'Failed to validate signup data'
+        );
+        setIsSendingOTP(false);
         return;
       }
 
-      // Register patient
-      const signupResponse = await fetch(`${BACKEND_URL}/auth/signup`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name,
-          phone: contact,
-          age: parseInt(age),
-          gender,
-          language: languageSelected,
-          address,
-          emergencyContact,
-          emergencyRelation,
-          disabilityStatus,
-          healthParameters,
-          password,
-        }),
-      });
-      const signupData = await signupResponse.json();
+      const isAvailable = await SMS.isAvailableAsync();
+      if (!isAvailable) {
+        Alert.alert(
+          translations[language]?.error || 'Error',
+          translations[language]?.sms_unavailable || 'SMS is not available on this device.'
+        );
+        setIsSendingOTP(false);
+        return;
+      }
 
-      if (signupResponse.ok) {
-        // Generate OTP
-        const otp = generateOTP();
-        // Store OTP
-        const otpResponse = await fetch(`${BACKEND_URL}/auth/store-otp`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ phone: contact, otp }),
+      const otp = generateOTP();
+      console.log('🔢 Generated OTP:', otp, 'for phone:', fullPhone);
+
+      const otpResponse = await axios.post(`${BACKEND_URL}/auth/store-otp`, {
+        phone: fullPhone,
+        otp: otp,
+        formData: {
+          ...formData,
+          phone: fullPhone,
+          emergencyContact: fullEmergencyContact,
+          countryCode: formData.countryCode,
+          emergencyCountryCode: formData.emergencyCountryCode,
+        },
+        otpExpires: new Date(Date.now() + 10 * 60 * 1000),
+      });
+      
+      console.log('💾 Store OTP response:', otpResponse.data);
+      
+      if (otpResponse.status === 200) {
+        await SMS.sendSMSAsync([fullPhone], `Your Nabha Hospital OTP is ${otp}. Valid for 10 minutes.`);
+        console.log('📱 SMS sent successfully to:', fullPhone, 'with OTP:', otp);
+        
+        navigation.navigate('OTP', {
+          phone: fullPhone,
+          formData: {
+            ...formData,
+            phone: fullPhone,
+            emergencyContact: fullEmergencyContact,
+          },
+          demoOtp: otp,
         });
-        const otpData = await otpResponse.json();
-        if (otpResponse.ok) {
-          // Send OTP
-          try {
-            await SMS.sendSMSAsync([contact], `Your Nabha Hospital OTP is ${otp}`);
-            navigation.navigate('OTP', { phone: contact });
-          } catch (smsError) {
-            console.error('SMS error:', smsError);
-            // Fallback: Log OTP and alert staff
-            await fetch(`${BACKEND_URL}/auth/store-otp`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ phone: contact, otp }),
-            });
-            Alert.alert('Error', `Failed to send SMS. OTP: ${otp} (Please note this OTP or contact staff)`);
-            navigation.navigate('OTP', { phone: contact });
-          }
-        } else {
-          Alert.alert('Error', otpData.error || 'Failed to store OTP');
+        
+        if (ttsEnabled) {
+          playText(`${translations[language]?.otp_sent || 'OTP sent to your phone'}: ${otp}`);
+        }
+        
+        if (__DEV__) {
+          Alert.alert(
+            'Demo OTP',
+            `Your OTP is: ${otp}\n\nUse this OTP to verify your account.`,
+            [{ text: 'OK' }]
+          );
         }
       } else {
-        Alert.alert('Error', signupData.error || 'Failed to register patient');
+        Alert.alert(
+          translations[language]?.error || 'Error',
+          otpResponse.data.error || 'Failed to store OTP'
+        );
       }
     } catch (error) {
-      console.error('Signup error:', error);
-      Alert.alert('Error', error.message.includes('Network request failed') ? 'Failed to connect to server. Check your network or server IP.' : `Signup failed: ${error.message}`);
+      console.error('❌ Request OTP error:', error.response?.data || error.message);
+      Alert.alert(
+        translations[language]?.error || 'Error',
+        error.response?.data?.error || 'Failed to send OTP. Please try again.'
+      );
+    } finally {
+      setIsSendingOTP(false);
     }
   };
 
+  const handleToggleTts = () => {
+    setTtsEnabled();
+    const status = ttsEnabled ? 'tts_disabled' : 'tts_enabled';
+    playText(translations[language]?.[status] || `Voice assistance ${ttsEnabled ? 'disabled' : 'enabled'}`);
+  };
+
+  // Define styles inside component to ensure access to windowWidth and windowHeight
   const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#f8fafc' },
+    container: {
+      flex: 1,
+      backgroundColor: '#f8fafc',
+    },
     scrollContent: {
       flexGrow: 1,
+      paddingHorizontal: orientation === 'landscape' ? windowWidth * 0.15 : windowWidth * 0.1,
+      paddingVertical: windowHeight * 0.03,
       justifyContent: 'center',
-      paddingBottom: windowHeight * 0.02,
-      paddingHorizontal: orientation === 'landscape' ? windowWidth * 0.1 : windowWidth * 0.06,
     },
-    content: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-    header: { alignItems: 'center', marginBottom: windowHeight * 0.06 },
+    header: {
+      alignItems: 'center',
+      marginBottom: windowHeight * 0.05,
+      width: '100%',
+    },
     title: {
-      fontSize: windowHeight * 0.04,
-      fontWeight: 'bold',
+      fontSize: Math.min(windowHeight * 0.045, 34),
+      fontWeight: '700',
       color: '#1e293b',
-      marginBottom: windowHeight * 0.01,
+      textAlign: 'center',
     },
-    subtitle: { fontSize: windowHeight * 0.022, color: '#64748b' },
-    form: { width: windowWidth * 0.9, marginBottom: windowHeight * 0.04 },
+    subtitle: {
+      fontSize: Math.min(windowHeight * 0.025, 20),
+      color: '#64748b',
+      textAlign: 'center',
+      lineHeight: Math.min(windowHeight * 0.035, 26),
+      paddingHorizontal: 10,
+    },
+    form: {
+      width: '100%',
+      maxWidth: Math.min(windowWidth * 0.85, 400),
+      alignSelf: 'center',
+    },
     inputContainer: {
       flexDirection: 'row',
       alignItems: 'center',
       backgroundColor: '#ffffff',
-      borderRadius: windowWidth * 0.03,
-      marginBottom: windowHeight * 0.02,
-      paddingHorizontal: windowWidth * 0.04,
-      paddingVertical: windowHeight * 0.005,
+      borderRadius: 12,
+      paddingHorizontal: 16,
+      paddingVertical: 8,
+      marginBottom: 20,
       shadowColor: '#000',
-      shadowOffset: { width: 0, height: windowHeight * 0.001 },
-      shadowOpacity: 0.05,
-      shadowRadius: windowWidth * 0.005,
-      elevation: 1,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.15,
+      shadowRadius: 6,
+      elevation: 4,
+      minHeight: windowHeight * 0.07,
     },
-    inputIcon: { marginRight: windowWidth * 0.03, fontSize: windowHeight * 0.025 },
+    inputIcon: {
+      marginRight: 12,
+      fontSize: Math.min(windowHeight * 0.03, 22),
+      color: '#64748b',
+    },
     input: {
       flex: 1,
-      paddingVertical: windowHeight * 0.02,
-      fontSize: windowHeight * 0.02,
+      fontSize: Math.min(windowHeight * 0.022, 18),
       color: '#1e293b',
+      paddingVertical: 10,
     },
     pickerContainer: {
-      marginBottom: windowHeight * 0.02,
-    },
-    pickerLabel: {
-      fontSize: windowHeight * 0.022,
-      color: '#1e293b',
-      marginBottom: windowHeight * 0.01,
-      fontWeight: '500',
-    },
-    picker: { height: windowHeight * 0.08, width: '100%', color: '#1e293b', fontSize: windowHeight * 0.02 },
-    eyeIcon: { padding: windowWidth * 0.01 },
-    consentContainer: { flexDirection: 'row', alignItems: 'center', marginBottom: windowHeight * 0.02 },
-    checkbox: { marginRight: windowWidth * 0.02 },
-    consentText: { fontSize: windowHeight * 0.018, color: '#64748b' },
-    signupButton: {
-      backgroundColor: '#10b981',
-      borderRadius: windowWidth * 0.03,
-      paddingVertical: windowHeight * 0.02,
+      backgroundColor: '#ffffff',
+      borderRadius: 12,
+      marginBottom: 20,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.15,
+      shadowRadius: 6,
+      elevation: 4,
+      minHeight: windowHeight * 0.07,
+      flexDirection: 'row',
       alignItems: 'center',
-      marginTop: windowHeight * 0.01,
+      paddingHorizontal: 16,
     },
-    signupButtonText: { color: '#ffffff', fontSize: windowHeight * 0.02, fontWeight: '600' },
-    footer: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center' },
-    footerText: { color: '#64748b', fontSize: windowHeight * 0.018 },
-    signupLink: { color: '#3b82f6', fontSize: windowHeight * 0.018, fontWeight: '600' },
-    ttsButton: { marginLeft: windowWidth * 0.02 },
+    picker: {
+      flex: 1,
+      height: windowHeight * 0.07,
+      color: '#1e293b',
+    },
+    button: {
+      backgroundColor: '#3b82f6',
+      borderRadius: 12,
+      paddingVertical: 16,
+      alignItems: 'center',
+      marginTop: 24,
+      marginBottom: windowHeight * 0.03,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.15,
+      shadowRadius: 6,
+      elevation: 4,
+      width: '100%',
+      maxWidth: 400,
+      alignSelf: 'center',
+      opacity: isSendingOTP ? 0.5 : 1,
+    },
+    buttonText: {
+      color: '#ffffff',
+      fontSize: Math.min(windowHeight * 0.024, 20),
+      fontWeight: '600',
+    },
+    signInLink: {
+      alignItems: 'center',
+      marginTop: 24,
+      marginBottom: windowHeight * 0.04,
+    },
+    signInText: {
+      color: '#64748b',
+      fontSize: Math.min(windowHeight * 0.02, 16),
+      textAlign: 'center',
+    },
+    ttsButton: {
+      marginLeft: 12,
+      padding: 10,
+    },
+    passwordEye: {
+      marginLeft: 12,
+      padding: 10,
+    },
+    ttsToggleContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: '#ffffff',
+      borderRadius: 12,
+      padding: 12,
+      marginVertical: 16,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.15,
+      shadowRadius: 6,
+      elevation: 4,
+      width: '100%',
+      maxWidth: 400,
+    },
+    ttsToggleText: {
+      fontSize: Math.min(windowHeight * 0.022, 18),
+      color: '#1e293b',
+      marginRight: 12,
+      fontWeight: '500',
+      textAlign: 'center',
+    },
   });
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.content}>
-          <View style={styles.header}>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Text style={styles.title}>{translations[language].create_account}</Text>
-              {ttsEnabled && (
-                <TouchableOpacity style={styles.ttsButton} onPress={() => playText(translations[language].create_account)}>
-                  <Ionicons name="volume-high-outline" size={windowHeight * 0.025} color="#3b82f6" />
-                </TouchableOpacity>
-              )}
-            </View>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Text style={styles.subtitle}>{translations[language].join_medkit}</Text>
-              {ttsEnabled && (
-                <TouchableOpacity style={styles.ttsButton} onPress={() => playText(translations[language].join_medkit)}>
-                  <Ionicons name="volume-high-outline" size={windowHeight * 0.025} color="#3b82f6" />
-                </TouchableOpacity>
-              )}
-            </View>
-          </View>
-
-          <View style={styles.form}>
-            <View style={styles.inputContainer}>
-              <Ionicons name="person-outline" size={styles.inputIcon.fontSize} color="#64748b" style={styles.inputIcon} />
-              <TextInput
-                style={styles.input}
-                placeholder={translations[language].full_name_placeholder}
-                value={name}
-                onChangeText={setName}
-              />
-              {ttsEnabled && (
-                <TouchableOpacity style={styles.ttsButton} onPress={() => playText(translations[language].full_name_placeholder)}>
-                  <Ionicons name="volume-high-outline" size={windowHeight * 0.025} color="#3b82f6" />
-                </TouchableOpacity>
-              )}
-            </View>
-
-            <View style={styles.inputContainer}>
-              <Ionicons name="calendar-outline" size={styles.inputIcon.fontSize} color="#64748b" style={styles.inputIcon} />
-              <TextInput
-                style={styles.input}
-                placeholder={translations[language].age_placeholder}
-                value={age}
-                onChangeText={setAge}
-                keyboardType="numeric"
-              />
-              {ttsEnabled && (
-                <TouchableOpacity style={styles.ttsButton} onPress={() => playText(translations[language].age_placeholder)}>
-                  <Ionicons name="volume-high-outline" size={windowHeight * 0.025} color="#3b82f6" />
-                </TouchableOpacity>
-              )}
-            </View>
-
-            <View style={styles.pickerContainer}>
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <Text style={styles.pickerLabel}>{translations[language].select_gender}</Text>
-                {ttsEnabled && (
-                  <TouchableOpacity style={styles.ttsButton} onPress={() => playText(translations[language].select_gender)}>
-                    <Ionicons name="volume-high-outline" size={windowHeight * 0.025} color="#3b82f6" />
-                  </TouchableOpacity>
-                )}
-              </View>
-              <View style={styles.inputContainer}>
-                <Ionicons name="male-female-outline" size={styles.inputIcon.fontSize} color="#64748b" style={styles.inputIcon} />
-                <Picker
-                  selectedValue={gender}
-                  onValueChange={(itemValue) => setGender(itemValue)}
-                  style={styles.picker}
-                >
-                  <Picker.Item label={translations[language].select_gender} value="" />
-                  {genders.map((item) => (
-                    <Picker.Item key={item} label={item} value={item} />
-                  ))}
-                </Picker>
-              </View>
-            </View>
-
-            <View style={styles.pickerContainer}>
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <Text style={styles.pickerLabel}>{translations[language].select_language}</Text>
-                {ttsEnabled && (
-                  <TouchableOpacity style={styles.ttsButton} onPress={() => playText(translations[language].select_language)}>
-                    <Ionicons name="volume-high-outline" size={windowHeight * 0.025} color="#3b82f6" />
-                  </TouchableOpacity>
-                )}
-              </View>
-              <View style={styles.inputContainer}>
-                <Ionicons name="language-outline" size={styles.inputIcon.fontSize} color="#64748b" style={styles.inputIcon} />
-                <Picker
-                  selectedValue={languageSelected}
-                  onValueChange={(itemValue) => setLanguageSelected(itemValue)}
-                  style={styles.picker}
-                >
-                  <Picker.Item label={translations[language].select_language} value="" />
-                  {languages.map((item) => (
-                    <Picker.Item key={item.name} label={item.display} value={item.name} />
-                  ))}
-                </Picker>
-              </View>
-            </View>
-
-            <View style={styles.inputContainer}>
-              <Ionicons name="call-outline" size={styles.inputIcon.fontSize} color="#64748b" style={styles.inputIcon} />
-              <TextInput
-                style={styles.input}
-                placeholder={translations[language].contact_placeholder}
-                value={contact}
-                onChangeText={setContact}
-                keyboardType="phone-pad"
-              />
-              {ttsEnabled && (
-                <TouchableOpacity style={styles.ttsButton} onPress={() => playText(translations[language].contact_placeholder)}>
-                  <Ionicons name="volume-high-outline" size={windowHeight * 0.025} color="#3b82f6" />
-                </TouchableOpacity>
-              )}
-            </View>
-
-            <View style={styles.inputContainer}>
-              <Ionicons name="location-outline" size={styles.inputIcon.fontSize} color="#64748b" style={styles.inputIcon} />
-              <TextInput
-                style={styles.input}
-                placeholder={translations[language].address_placeholder}
-                value={address}
-                onChangeText={setAddress}
-                multiline
-                numberOfLines={3}
-              />
-              {ttsEnabled && (
-                <TouchableOpacity style={styles.ttsButton} onPress={() => playText(translations[language].address_placeholder)}>
-                  <Ionicons name="volume-high-outline" size={windowHeight * 0.025} color="#3b82f6" />
-                </TouchableOpacity>
-              )}
-            </View>
-
-            <View style={styles.inputContainer}>
-              <Ionicons name="medical-outline" size={styles.inputIcon.fontSize} color="#64748b" style={styles.inputIcon} />
-              <TextInput
-                style={styles.input}
-                placeholder={translations[language].health_records_placeholder}
-                value={healthRecords}
-                onChangeText={setHealthRecords}
-                multiline
-                numberOfLines={3}
-              />
-              {ttsEnabled && (
-                <TouchableOpacity style={styles.ttsButton} onPress={() => playText(translations[language].health_records_placeholder)}>
-                  <Ionicons name="volume-high-outline" size={windowHeight * 0.025} color="#3b82f6" />
-                </TouchableOpacity>
-              )}
-            </View>
-
-            <View style={styles.inputContainer}>
-              <Ionicons name="medkit-outline" size={styles.inputIcon.fontSize} color="#64748b" style={styles.inputIcon} />
-              <TextInput
-                style={styles.input}
-                placeholder={translations[language].current_medications_placeholder}
-                value={currentMedications}
-                onChangeText={setCurrentMedications}
-                multiline
-                numberOfLines={3}
-              />
-              {ttsEnabled && (
-                <TouchableOpacity style={styles.ttsButton} onPress={() => playText(translations[language].current_medications_placeholder)}>
-                  <Ionicons name="volume-high-outline" size={windowHeight * 0.025} color="#3b82f6" />
-                </TouchableOpacity>
-              )}
-            </View>
-
-            <View style={styles.inputContainer}>
-              <Ionicons name="person-circle-outline" size={styles.inputIcon.fontSize} color="#64748b" style={styles.inputIcon} />
-              <TextInput
-                style={styles.input}
-                placeholder={translations[language].emergency_contact_placeholder}
-                value={emergencyContact}
-                onChangeText={setEmergencyContact}
-                keyboardType="phone-pad"
-              />
-              {ttsEnabled && (
-                <TouchableOpacity style={styles.ttsButton} onPress={() => playText(translations[language].emergency_contact_placeholder)}>
-                  <Ionicons name="volume-high-outline" size={windowHeight * 0.025} color="#3b82f6" />
-                </TouchableOpacity>
-              )}
-            </View>
-
-            <View style={styles.inputContainer}>
-              <Ionicons name="people-outline" size={styles.inputIcon.fontSize} color="#64748b" style={styles.inputIcon} />
-              <TextInput
-                style={styles.input}
-                placeholder={translations[language].emergency_relation_placeholder}
-                value={emergencyRelation}
-                onChangeText={setEmergencyRelation}
-              />
-              {ttsEnabled && (
-                <TouchableOpacity style={styles.ttsButton} onPress={() => playText(translations[language].emergency_relation_placeholder)}>
-                  <Ionicons name="volume-high-outline" size={windowHeight * 0.025} color="#3b82f6" />
-                </TouchableOpacity>
-              )}
-            </View>
-
-            <View style={styles.inputContainer}>
-              <Ionicons name="accessibility-outline" size={styles.inputIcon.fontSize} color="#64748b" style={styles.inputIcon} />
-              <TextInput
-                style={styles.input}
-                placeholder={translations[language].disability_status_placeholder}
-                value={disabilityStatus}
-                onChangeText={setDisabilityStatus}
-              />
-              {ttsEnabled && (
-                <TouchableOpacity style={styles.ttsButton} onPress={() => playText(translations[language].disability_status_placeholder)}>
-                  <Ionicons name="volume-high-outline" size={windowHeight * 0.025} color="#3b82f6" />
-                </TouchableOpacity>
-              )}
-            </View>
-
-            <View style={styles.inputContainer}>
-              <Ionicons name="heart-outline" size={styles.inputIcon.fontSize} color="#64748b" style={styles.inputIcon} />
-              <TextInput
-                style={styles.input}
-                placeholder={translations[language].health_parameters_placeholder}
-                value={healthParameters}
-                onChangeText={setHealthParameters}
-                multiline
-                numberOfLines={3}
-              />
-              {ttsEnabled && (
-                <TouchableOpacity style={styles.ttsButton} onPress={() => playText(translations[language].health_parameters_placeholder)}>
-                  <Ionicons name="volume-high-outline" size={windowHeight * 0.025} color="#3b82f6" />
-                </TouchableOpacity>
-              )}
-            </View>
-
-            <View style={styles.inputContainer}>
-              <Ionicons name="lock-closed-outline" size={styles.inputIcon.fontSize} color="#64748b" style={styles.inputIcon} />
-              <TextInput
-                style={styles.input}
-                placeholder={translations[language].password_placeholder}
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry={!showPassword}
-              />
-              <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeIcon}>
-                <Ionicons name={showPassword ? 'eye-outline' : 'eye-off-outline'} size={styles.inputIcon.fontSize} color="#64748b" />
-              </TouchableOpacity>
-              {ttsEnabled && (
-                <TouchableOpacity style={styles.ttsButton} onPress={() => playText(translations[language].password_placeholder)}>
-                  <Ionicons name="volume-high-outline" size={windowHeight * 0.025} color="#3b82f6" />
-                </TouchableOpacity>
-              )}
-            </View>
-
-            <View style={styles.inputContainer}>
-              <Ionicons name="lock-closed-outline" size={styles.inputIcon.fontSize} color="#64748b" style={styles.inputIcon} />
-              <TextInput
-                style={styles.input}
-                placeholder={translations[language].confirm_password_placeholder}
-                value={confirmPassword}
-                onChangeText={setConfirmPassword}
-                secureTextEntry={!showConfirmPassword}
-              />
-              <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)} style={styles.eyeIcon}>
-                <Ionicons name={showConfirmPassword ? 'eye-outline' : 'eye-off-outline'} size={styles.inputIcon.fontSize} color="#64748b" />
-              </TouchableOpacity>
-              {ttsEnabled && (
-                <TouchableOpacity style={styles.ttsButton} onPress={() => playText(translations[language].confirm_password_placeholder)}>
-                  <Ionicons name="volume-high-outline" size={windowHeight * 0.025} color="#3b82f6" />
-                </TouchableOpacity>
-              )}
-            </View>
-
-            <View style={styles.consentContainer}>
-              <TouchableOpacity onPress={() => setConsent(!consent)} style={styles.checkbox}>
-                <Ionicons name={consent ? 'checkbox-outline' : 'square-outline'} size={styles.inputIcon.fontSize} color="#3b82f6" />
-              </TouchableOpacity>
-              <Text style={styles.consentText}>{translations[language].consent_text}</Text>
-              {ttsEnabled && (
-                <TouchableOpacity style={styles.ttsButton} onPress={() => playText(translations[language].consent_text)}>
-                  <Ionicons name="volume-high-outline" size={windowHeight * 0.025} color="#3b82f6" />
-                </TouchableOpacity>
-              )}
-            </View>
-
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <TouchableOpacity style={styles.signupButton} onPress={handleSignup}>
-                <Text style={styles.signupButtonText}>{translations[language].get_otp}</Text>
-              </TouchableOpacity>
-              {ttsEnabled && (
-                <TouchableOpacity style={styles.ttsButton} onPress={() => playText(translations[language].get_otp)}>
-                  <Ionicons name="volume-high-outline" size={windowHeight * 0.025} color="#3b82f6" />
-                </TouchableOpacity>
-              )}
-            </View>
-          </View>
-
-          <View style={styles.footer}>
-            <Text style={styles.footerText}>{translations[language].already_have_account}</Text>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <View style={styles.header}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+            <Text style={styles.title}>{translations[language]?.create_account || 'Create Account'}</Text>
             {ttsEnabled && (
-              <TouchableOpacity style={styles.ttsButton} onPress={() => playText(translations[language].already_have_account)}>
-                <Ionicons name="volume-high-outline" size={windowHeight * 0.018} color="#3b82f6" />
+              <TouchableOpacity
+                style={styles.ttsButton}
+                onPress={() => playText(translations[language]?.create_account || 'Create Account')}
+              >
+                <Ionicons name="volume-high-outline" size={Math.min(windowHeight * 0.03, 24)} color="#3b82f6" />
               </TouchableOpacity>
             )}
-            <TouchableOpacity onPress={() => navigation.navigate('Signin')}>
-              <Text style={styles.signupLink}>{translations[language].sign_in_link}</Text>
+          </View>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+            <Text style={styles.subtitle}>
+              {translations[language]?.join_medkit || 'Join MedKit to manage your health appointments seamlessly'}
+            </Text>
+            {ttsEnabled && (
+              <TouchableOpacity
+                style={styles.ttsButton}
+                onPress={() => playText(translations[language]?.join_medkit || 'Join MedKit to manage your health appointments seamlessly')}
+              >
+                <Ionicons name="volume-high-outline" size={Math.min(windowHeight * 0.03, 24)} color="#3b82f6" />
+              </TouchableOpacity>
+            )}
+          </View>
+          <View style={styles.ttsToggleContainer}>
+            <Text style={styles.ttsToggleText}>
+              {translations[language]?.toggle_tts || 'Voice Assistance'} (
+              {ttsEnabled ? translations[language]?.tts_enabled || 'On' : translations[language]?.tts_disabled || 'Off'})
+            </Text>
+            <TouchableOpacity onPress={handleToggleTts} style={styles.ttsButton}>
+              <Ionicons
+                name={ttsEnabled ? 'volume-high-outline' : 'volume-mute-outline'}
+                size={Math.min(windowHeight * 0.03, 24)}
+                color="#3b82f6"
+              />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <View style={styles.form}>
+          <View style={styles.inputContainer}>
+            <Ionicons name="person-outline" size={Math.min(windowHeight * 0.03, 22)} color="#64748b" style={styles.inputIcon} />
+            <TextInput
+              style={styles.input}
+              placeholder={translations[language]?.full_name_placeholder || 'Full Name'}
+              value={formData.name}
+              onChangeText={(text) => handleInputChange('name', text)}
+              placeholderTextColor="#9ca3af"
+            />
+            {ttsEnabled && (
+              <TouchableOpacity
+                style={styles.ttsButton}
+                onPress={() => playText(translations[language]?.full_name_placeholder || 'Full Name')}
+              >
+                <Ionicons name="volume-high-outline" size={Math.min(windowHeight * 0.03, 24)} color="#3b82f6" />
+              </TouchableOpacity>
+            )}
+          </View>
+
+          <View style={styles.inputContainer}>
+            <Picker
+              selectedValue={formData.countryCode}
+              onValueChange={(value) => handleInputChange('countryCode', value)}
+              style={[styles.picker, { width: Math.min(windowWidth * 0.25, 100) }]}
+            >
+              <Picker.Item label="+91" value="+91" />
+              <Picker.Item label="+1" value="+1" />
+              <Picker.Item label="+44" value="+44" />
+            </Picker>
+            <Ionicons name="call-outline" size={Math.min(windowHeight * 0.03, 22)} color="#64748b" style={styles.inputIcon} />
+            <TextInput
+              style={styles.input}
+              placeholder={translations[language]?.contact_placeholder || '9876543210'}
+              value={formData.phone}
+              onChangeText={(text) => handleInputChange('phone', text)}
+              keyboardType="phone-pad"
+              placeholderTextColor="#9ca3af"
+            />
+            {ttsEnabled && (
+              <TouchableOpacity
+                style={styles.ttsButton}
+                onPress={() => playText(translations[language]?.contact_placeholder || 'Phone Number')}
+              >
+                <Ionicons name="volume-high-outline" size={Math.min(windowHeight * 0.03, 24)} color="#3b82f6" />
+              </TouchableOpacity>
+            )}
+          </View>
+
+          <View style={styles.inputContainer}>
+            <Ionicons name="calendar-outline" size={Math.min(windowHeight * 0.03, 22)} color="#64748b" style={styles.inputIcon} />
+            <TextInput
+              style={styles.input}
+              placeholder={translations[language]?.age_placeholder || 'Age'}
+              value={formData.age}
+              onChangeText={(text) => handleInputChange('age', text)}
+              keyboardType="numeric"
+              placeholderTextColor="#9ca3af"
+            />
+            {ttsEnabled && (
+              <TouchableOpacity
+                style={styles.ttsButton}
+                onPress={() => playText(translations[language]?.age_placeholder || 'Age')}
+              >
+                <Ionicons name="volume-high-outline" size={Math.min(windowHeight * 0.03, 24)} color="#3b82f6" />
+              </TouchableOpacity>
+            )}
+          </View>
+
+          <View style={styles.pickerContainer}>
+            <Picker
+              selectedValue={formData.gender}
+              onValueChange={(value) => handleInputChange('gender', value)}
+              style={styles.picker}
+            >
+              <Picker.Item label={translations[language]?.select_gender || 'Select Gender'} value="" />
+              <Picker.Item label={translations[language]?.male || 'Male'} value="Male" />
+              <Picker.Item label={translations[language]?.female || 'Female'} value="Female" />
+              <Picker.Item label={translations[language]?.other || 'Other'} value="Other" />
+            </Picker>
+            {ttsEnabled && (
+              <TouchableOpacity
+                style={styles.ttsButton}
+                onPress={() => playText(translations[language]?.select_gender || 'Select Gender')}
+              >
+                <Ionicons name="volume-high-outline" size={Math.min(windowHeight * 0.03, 24)} color="#3b82f6" />
+              </TouchableOpacity>
+            )}
+          </View>
+
+          <View style={styles.pickerContainer}>
+            <Picker
+              selectedValue={formData.language}
+              onValueChange={(value) => handleInputChange('language', value)}
+              style={styles.picker}
+            >
+              <Picker.Item label={translations[language]?.select_language || 'Select Language'} value="" />
+              <Picker.Item label="English" value="English" />
+              <Picker.Item label="Hindi" value="Hindi" />
+              <Picker.Item label="Punjabi" value="Punjabi" />
+            </Picker>
+            {ttsEnabled && (
+              <TouchableOpacity
+                style={styles.ttsButton}
+                onPress={() => playText(translations[language]?.select_language || 'Select Language')}
+              >
+                <Ionicons name="volume-high-outline" size={Math.min(windowHeight * 0.03, 24)} color="#3b82f6" />
+              </TouchableOpacity>
+            )}
+          </View>
+
+          <View style={styles.inputContainer}>
+            <Ionicons name="location-outline" size={Math.min(windowHeight * 0.03, 22)} color="#64748b" style={styles.inputIcon} />
+            <TextInput
+              style={styles.input}
+              placeholder={translations[language]?.address_placeholder || 'Address'}
+              value={formData.address}
+              onChangeText={(text) => handleInputChange('address', text)}
+              placeholderTextColor="#9ca3af"
+              multiline
+            />
+            {ttsEnabled && (
+              <TouchableOpacity
+                style={styles.ttsButton}
+                onPress={() => playText(translations[language]?.address_placeholder || 'Address')}
+              >
+                <Ionicons name="volume-high-outline" size={Math.min(windowHeight * 0.03, 24)} color="#3b82f6" />
+              </TouchableOpacity>
+            )}
+          </View>
+
+          <View style={styles.inputContainer}>
+            <Picker
+              selectedValue={formData.emergencyCountryCode}
+              onValueChange={(value) => handleInputChange('emergencyCountryCode', value)}
+              style={[styles.picker, { width: Math.min(windowWidth * 0.25, 100) }]}
+            >
+              <Picker.Item label="+91" value="+91" />
+              <Picker.Item label="+1" value="+1" />
+              <Picker.Item label="+44" value="+44" />
+            </Picker>
+            <Ionicons name="call-outline" size={Math.min(windowHeight * 0.03, 22)} color="#64748b" style={styles.inputIcon} />
+            <TextInput
+              style={styles.input}
+              placeholder={translations[language]?.emergency_contact_placeholder || '9876543211'}
+              value={formData.emergencyContact}
+              onChangeText={(text) => handleInputChange('emergencyContact', text)}
+              keyboardType="phone-pad"
+              placeholderTextColor="#9ca3af"
+            />
+            {ttsEnabled && (
+              <TouchableOpacity
+                style={styles.ttsButton}
+                onPress={() => playText(translations[language]?.emergency_contact_placeholder || 'Emergency Contact')}
+              >
+                <Ionicons name="volume-high-outline" size={Math.min(windowHeight * 0.03, 24)} color="#3b82f6" />
+              </TouchableOpacity>
+            )}
+          </View>
+
+          <View style={styles.inputContainer}>
+            <Ionicons name="person-outline" size={Math.min(windowHeight * 0.03, 22)} color="#64748b" style={styles.inputIcon} />
+            <TextInput
+              style={styles.input}
+              placeholder={translations[language]?.emergency_relation_placeholder || 'Emergency Relation'}
+              value={formData.emergencyRelation}
+              onChangeText={(text) => handleInputChange('emergencyRelation', text)}
+              placeholderTextColor="#9ca3af"
+            />
+            {ttsEnabled && (
+              <TouchableOpacity
+                style={styles.ttsButton}
+                onPress={() => playText(translations[language]?.emergency_relation_placeholder || 'Emergency Relation')}
+              >
+                <Ionicons name="volume-high-outline" size={Math.min(windowHeight * 0.03, 24)} color="#3b82f6" />
+              </TouchableOpacity>
+            )}
+          </View>
+
+          <View style={styles.inputContainer}>
+            <Ionicons name="accessibility-outline" size={Math.min(windowHeight * 0.03, 22)} color="#64748b" style={styles.inputIcon} />
+            <TextInput
+              style={styles.input}
+              placeholder={translations[language]?.disability_status_placeholder || 'Disability Status (Optional)'}
+              value={formData.disabilityStatus}
+              onChangeText={(text) => handleInputChange('disabilityStatus', text)}
+              placeholderTextColor="#9ca3af"
+            />
+            {ttsEnabled && (
+              <TouchableOpacity
+                style={styles.ttsButton}
+                onPress={() => playText(translations[language]?.disability_status_placeholder || 'Disability Status (Optional)')}
+              >
+                <Ionicons name="volume-high-outline" size={Math.min(windowHeight * 0.03, 24)} color="#3b82f6" />
+              </TouchableOpacity>
+            )}
+          </View>
+
+          <View style={styles.inputContainer}>
+            <Ionicons name="heart-outline" size={Math.min(windowHeight * 0.03, 22)} color="#64748b" style={styles.inputIcon} />
+            <TextInput
+              style={styles.input}
+              placeholder={translations[language]?.health_parameters_placeholder || 'Health Parameters (Optional)'}
+              value={formData.healthParameters}
+              onChangeText={(text) => handleInputChange('healthParameters', text)}
+              placeholderTextColor="#9ca3af"
+              multiline
+            />
+            {ttsEnabled && (
+              <TouchableOpacity
+                style={styles.ttsButton}
+                onPress={() => playText(translations[language]?.health_parameters_placeholder || 'Health Parameters (Optional)')}
+              >
+                <Ionicons name="volume-high-outline" size={Math.min(windowHeight * 0.03, 24)} color="#3b82f6" />
+              </TouchableOpacity>
+            )}
+          </View>
+
+          <View style={styles.inputContainer}>
+            <Ionicons name="lock-closed-outline" size={Math.min(windowHeight * 0.03, 22)} color="#64748b" style={styles.inputIcon} />
+            <TextInput
+              style={styles.input}
+              placeholder={translations[language]?.password_placeholder || 'Password'}
+              value={formData.password}
+              onChangeText={(text) => handleInputChange('password', text)}
+              secureTextEntry={!showPassword}
+              placeholderTextColor="#9ca3af"
+            />
+            <TouchableOpacity
+              style={styles.passwordEye}
+              onPress={() => setShowPassword(!showPassword)}
+            >
+              <Ionicons
+                name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                size={Math.min(windowHeight * 0.03, 24)}
+                color="#64748b"
+              />
             </TouchableOpacity>
             {ttsEnabled && (
-              <TouchableOpacity style={styles.ttsButton} onPress={() => playText(translations[language].sign_in_link)}>
-                <Ionicons name="volume-high-outline" size={windowHeight * 0.018} color="#3b82f6" />
+              <TouchableOpacity
+                style={styles.ttsButton}
+                onPress={() => playText(translations[language]?.password_placeholder || 'Password')}
+              >
+                <Ionicons name="volume-high-outline" size={Math.min(windowHeight * 0.03, 24)} color="#3b82f6" />
               </TouchableOpacity>
             )}
           </View>
+
+          <View style={styles.inputContainer}>
+            <Ionicons name="lock-closed-outline" size={Math.min(windowHeight * 0.03, 22)} color="#64748b" style={styles.inputIcon} />
+            <TextInput
+              style={styles.input}
+              placeholder={translations[language]?.confirm_password_placeholder || 'Confirm Password'}
+              value={formData.confirmPassword}
+              onChangeText={(text) => handleInputChange('confirmPassword', text)}
+              secureTextEntry={!showConfirmPassword}
+              placeholderTextColor="#9ca3af"
+            />
+            <TouchableOpacity
+              style={styles.passwordEye}
+              onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+            >
+              <Ionicons
+                name={showConfirmPassword ? 'eye-off-outline' : 'eye-outline'}
+                size={Math.min(windowHeight * 0.03, 24)}
+                color="#64748b"
+              />
+            </TouchableOpacity>
+            {ttsEnabled && (
+              <TouchableOpacity
+                style={styles.ttsButton}
+                onPress={() => playText(translations[language]?.confirm_password_placeholder || 'Confirm Password')}
+              >
+                <Ionicons name="volume-high-outline" size={Math.min(windowHeight * 0.03, 24)} color="#3b82f6" />
+              </TouchableOpacity>
+            )}
+          </View>
+
+          <TouchableOpacity style={[styles.button, isSendingOTP && { opacity: 0.5 }]} onPress={handleGetOTP} disabled={isSendingOTP}>
+            <Text style={styles.buttonText}>
+              {isSendingOTP ? translations[language]?.sending || 'Sending...' : translations[language]?.get_otp || 'Get OTP'}
+            </Text>
+          </TouchableOpacity>
+
+          <View style={styles.signInLink}>
+            <Text style={styles.signInText}>
+              {translations[language]?.already_have_account || 'Already have an account? '}
+              <Text
+                style={{ color: '#3b82f6', fontWeight: '600' }}
+                onPress={() => navigation.navigate('Signin')}
+              >
+                {translations[language]?.sign_in_link || 'Sign In'}
+              </Text>
+            </Text>
+            {ttsEnabled && (
+              <TouchableOpacity
+                style={styles.ttsButton}
+                onPress={() =>
+                  playText(
+                    `${translations[language]?.already_have_account || 'Already have an account? '} ${
+                      translations[language]?.sign_in_link || 'Sign In'
+                    }`
+                  )
+                }
+              >
+                <Ionicons name="volume-high-outline" size={Math.min(windowHeight * 0.03, 24)} color="#3b82f6" />
+              </TouchableOpacity>
+            )}
+          </View>
+
+          {__DEV__ && (
+            <View style={{ marginTop: 20, padding: 10, backgroundColor: '#f0f9ff', borderRadius: 8 }}>
+              <Text style={{ fontSize: 12, color: '#64748b' }}>
+                Debug: Language = {language}, TTS = {ttsEnabled ? 'On' : 'Off'}
+              </Text>
+            </View>
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>
