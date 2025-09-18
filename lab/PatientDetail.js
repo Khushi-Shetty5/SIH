@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { useLab } from "../context/LabContext";
@@ -7,8 +7,17 @@ export default function PatientDetail({ route, navigation }) {
   const { patientId } = route.params || {};
   const { patients, reports } = useLab();
 
-  const patient = useMemo(() => patients.find((p) => p.id === patientId), [patients, patientId]);
-  const patientReports = useMemo(() => reports.filter((r) => r.patientId === patientId), [reports, patientId]);
+  // Moved the filtering logic inside the component to avoid hook order issues
+  const getPatient = () => {
+    return patients.find((p) => p._id === patientId);
+  };
+
+  const getPatientReports = () => {
+    return reports.filter((r) => r.patientId === patientId);
+  };
+
+  const patient = getPatient();
+  const patientReports = getPatientReports();
 
   if (!patient) {
     return (
@@ -20,7 +29,7 @@ export default function PatientDetail({ route, navigation }) {
     <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
       <View style={styles.infoCard}>
         <Text style={styles.name}>{patient.name}</Text>
-        <Text style={styles.meta}>ID: {patient.id}</Text>
+        <Text style={styles.meta}>ID: {patient._id}</Text>
         <Text style={styles.meta}>Age: {patient.age}</Text>
         <Text style={styles.meta}>Gender: {patient.gender}</Text>
         <Text style={styles.meta}>Contact: {patient.contact}</Text>
@@ -28,7 +37,7 @@ export default function PatientDetail({ route, navigation }) {
 
       <TouchableOpacity
         style={styles.addReportBtn}
-        onPress={() => navigation.navigate("UploadReport", { patientId: patient.id })}
+        onPress={() => navigation.navigate("UploadReport", { patientId: patient._id, from: 'PatientDetail' })}
       >
         <MaterialIcons name="post-add" size={20} color="#fff" />
         <Text style={styles.addReportText}> Add Report</Text>
@@ -41,10 +50,18 @@ export default function PatientDetail({ route, navigation }) {
         patientReports.map((r) => (
           <TouchableOpacity key={r.id} style={styles.reportItem} onPress={() => navigation.navigate("ReportDetail", { report: r })}>
             <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <Ionicons name={r.type === "pdf" ? "document-text" : "create"} size={18} color="#2E86C1" />
-              <Text style={styles.reportTitle}>  {r.title} {r.type === "pdf" ? "(PDF)" : ""}</Text>
+              <Ionicons name={r.files && r.files.length > 0 ? "document-text" : "create"} size={18} color="#2E86C1" />
+              <Text style={styles.reportTitle}>  {r.title} {r.files && r.files.length > 0 ? "(PDF)" : ""}</Text>
             </View>
             <Text style={styles.reportMeta}>by {r.uploadedByName} • {new Date(r.createdAt).toLocaleString()}</Text>
+            
+            {/* Show file attachment info */}
+            {r.files && r.files.length > 0 && (
+              <View style={styles.fileInfo}>
+                <MaterialIcons name="attachment" size={14} color="#6c757d" />
+                <Text style={styles.fileText}>{r.files.length} file(s) attached</Text>
+              </View>
+            )}
           </TouchableOpacity>
         ))
       )}
@@ -88,5 +105,14 @@ const styles = StyleSheet.create({
   },
   reportTitle: { color: "#2E4053", fontWeight: "700" },
   reportMeta: { color: "#6c757d", marginTop: 4 },
+  fileInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 4,
+  },
+  fileText: {
+    color: "#6c757d",
+    fontSize: 12,
+    marginLeft: 4,
+  },
 });
-

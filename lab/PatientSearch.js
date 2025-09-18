@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -7,20 +7,23 @@ import {
   TouchableOpacity,
   FlatList,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { useLab } from "../context/LabContext";
 
 export default function PatientSearch({ navigation }) {
   const { patients, reports } = useLab();
   const [search, setSearch] = useState("");
 
-  const results = useMemo(() => {
+  // Moved the filtering logic inside the component to avoid hook order issues
+  const getFilteredPatients = () => {
     const term = search.trim().toLowerCase();
     if (!term) return patients;
     return patients.filter(
-      (p) => p.id.toLowerCase().includes(term) || p.name.toLowerCase().includes(term)
+      (p) => p._id.toLowerCase().includes(term) || p.name.toLowerCase().includes(term)
     );
-  }, [search, patients]);
+  };
+
+  const results = getFilteredPatients();
 
   return (
     <View style={styles.container}>
@@ -39,15 +42,15 @@ export default function PatientSearch({ navigation }) {
       {/* Show results */}
       <FlatList
         data={results}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item._id}
         style={{ marginTop: 20 }}
         showsVerticalScrollIndicator={false}
         renderItem={({ item }) => {
-          const patientReports = reports.filter((r) => r.patientId === item.id);
+          const patientReports = reports.filter((r) => r.patientId === item._id);
           return (
-            <TouchableOpacity style={styles.card} activeOpacity={0.9} onPress={() => navigation.navigate("PatientDetail", { patientId: item.id })}>
+            <TouchableOpacity style={styles.card} activeOpacity={0.9} onPress={() => navigation.navigate("PatientDetail", { patientId: item._id })}>
               <Text style={styles.cardTitle}>
-                {item.name} ({item.id})
+                {item.name} ({item._id})
               </Text>
               <Text style={styles.cardText}>Age: {item.age}</Text>
               <Text style={styles.cardText}>Gender: {item.gender}</Text>
@@ -55,7 +58,7 @@ export default function PatientSearch({ navigation }) {
 
               <TouchableOpacity
                 style={styles.addReportBtn}
-                onPress={() => navigation.navigate("UploadReport", { patientId: item.id })}
+                onPress={() => navigation.navigate("UploadReport", { patientId: item._id, from: 'PatientSearch' })}
               >
                 <Text style={styles.addReportText}>+ Add Report</Text>
               </TouchableOpacity>
@@ -65,13 +68,16 @@ export default function PatientSearch({ navigation }) {
                 <Text style={{ color: "#6c757d" }}>No reports yet.</Text>
               ) : (
                 patientReports.map((r) => (
-                  <TouchableOpacity key={r.id} style={styles.reportItem} onPress={() => navigation.navigate("ReportDetail", { report: r })}>
-                    <Text style={styles.reportTitle}>{r.title} {r.type === "pdf" ? "(PDF)" : ""}</Text>
+                  <TouchableOpacity key={r._id || r.id} style={styles.reportItem} onPress={() => navigation.navigate("ReportDetail", { report: r })}>
+                    <Text style={styles.reportTitle}>{r.title} {r.files && r.files.length > 0 ? "(PDF)" : ""}</Text>
                     <Text style={styles.reportMeta}>by {r.uploadedByName} • {new Date(r.createdAt).toLocaleString()}</Text>
-                    {r.type === "manual" ? (
-                      <Text style={styles.reportContent} numberOfLines={2}>{r.content}</Text>
-                    ) : (
-                      <Text style={styles.reportLink}>Tap to open</Text>
+                    
+                    {/* Show file attachment info */}
+                    {r.files && r.files.length > 0 && (
+                      <View style={styles.fileInfo}>
+                        <MaterialIcons name="attachment" size={14} color="#6c757d" />
+                        <Text style={styles.fileText}>{r.files.length} file(s) attached</Text>
+                      </View>
                     )}
                   </TouchableOpacity>
                 ))
@@ -147,6 +153,14 @@ const styles = StyleSheet.create({
   },
   reportTitle: { color: "#2E4053", fontWeight: "700" },
   reportMeta: { color: "#6c757d", marginTop: 2 },
-  reportContent: { color: "#495057", marginTop: 6 },
-  reportLink: { color: "#2E86C1", marginTop: 6 },
+  fileInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 4,
+  },
+  fileText: {
+    color: "#6c757d",
+    fontSize: 12,
+    marginLeft: 4,
+  },
 });

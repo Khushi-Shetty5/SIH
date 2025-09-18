@@ -2299,45 +2299,6 @@ function Button({ text, onPress, color, type }) {
   );
 }
 
-// const styles = StyleSheet.create({
-//   container: { flex: 1, backgroundColor: "#f8f9fa", padding: 16 },
-//   header: { fontSize: 20, fontWeight: "800", color: "#2E4053", marginBottom: 10 },
-//   subHeader: { marginTop: 14, marginBottom: 8, fontWeight: "700", color: "#2E4053" },
-//   card: {
-//     backgroundColor: "#fff",
-//     borderRadius: 12,
-//     borderWidth: 1,
-//     borderColor: "#e9ecef",
-//     padding: 12,
-//     shadowColor: "#000",
-//     shadowOpacity: 0.05,
-//     shadowRadius: 4,
-//     elevation: 1,
-//     marginBottom: 12,
-//   },
-//   row: { flexDirection: "row", alignItems: "center", paddingVertical: 8 },
-//   itemTitle: { color: "#2E4053", fontWeight: "700" },
-//   itemSub: { color: "#6c757d", marginTop: 4, fontSize: 12 },
-//   btn: { paddingVertical: 8, paddingHorizontal: 12, borderRadius: 8 },
-//   btnPrimary: { backgroundColor: "#2E86C1" },
-//   btnSecondary: { backgroundColor: "#e8f1f9", borderWidth: 1, borderColor: "#cfe3f5" },
-//   btnText: { color: "#fff", fontWeight: "700" },
-//   searchRow: {
-//     flexDirection: "row",
-//     alignItems: "center",
-//     backgroundColor: "#fff",
-//     borderRadius: 10,
-//     borderWidth: 1,
-//     borderColor: "#e9ecef",
-//     paddingHorizontal: 10,
-//     paddingVertical: 8,
-//     marginBottom: 10,
-//   },
-//   input: { marginLeft: 8, flex: 1 },
-//   note: { color: "#6c757d", fontSize: 12, marginTop: 8 },
-// });
-
-
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#f8f9fa" },
   scrollContent: { padding: 16, paddingBottom: 100 },
@@ -2355,7 +2316,7 @@ const styles = StyleSheet.create({
     elevation: 1,
     marginBottom: 12,
   },
-  row: { flexDirection: "row", alignItems: "center", paddingVertical: 8, marginBottom: 8, backgroundColor: "#fff", borderRadius: 10, paddingHorizontal: 12, shadowColor: "#000", shadowOpacity: 0.05, shadowRadius: 4, elevation: 1 },
+  row: { flexDirection: "row", alignItems: "center", paddingVertical: 8 },
   itemTitle: { color: "#2E4053", fontWeight: "700" },
   itemSub: { color: "#6c757d", marginTop: 4, fontSize: 12 },
   btn: { paddingVertical: 8, paddingHorizontal: 12, borderRadius: 8 },
@@ -2896,6 +2857,44 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#fff',
     borderRadius: 12,
+  },
+  enhancedEmptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  enhancedEmptyTitle: {
+    fontSize: 24,
+    color: '#2E4053',
+    marginBottom: 4,
+    textAlign: 'center',
+  },
+  enhancedEmptySubtitle: {
+    fontSize: 14,
+    color: '#6c757d',
+    marginTop: 4,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  medicineHeaderContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: '#E3F2FD',
+  },
+
+});
+
+export default styles;
+
     borderWidth: 2,
     borderColor: '#E3F2FD',
     paddingHorizontal: 16,
@@ -3206,6 +3205,323 @@ const styles = StyleSheet.create({
     marginLeft: 6,
   },
   // Enhanced Medicine Styles
+  emptySubText: {
+    fontSize: 14,
+    color: '#8E8E93',
+    marginTop: 8,
+    textAlign: 'center',
+    lineHeight: 20
+  },
+
+  // Enhanced Patient Profile Styles
+  enhancedPatientProfileHeader: {
+    marginBottom: 16,
+  },
+  patientStatsContainer: {
+    flexDirection: 'row',
+    marginTop: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 12,
+    padding: 8,
+  },
+  patientStatItem: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  patientStatNumber: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#fff',
+  },
+  patientStatLabel: {
+    fontSize: 12,
+    color: 'rgba(255, 255, 255, 0.8)',
+    marginTop: 2,
+  },
+  enhancedInfoCard: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E3F2FD',
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 4,
+    padding: 16,
+    marginBottom: 16,
+  },
+  appointmentRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f3f4',
+  },
+  appointmentRowLast: {
+    borderBottomWidth: 0,
+  },
+  appointmentIcon: {
+    marginRight: 12,
+  },
+  appointmentDetails: {
+    flex: 1,
+  },
+  appointmentTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#2E4053',
+    marginBottom: 2,
+  },
+  appointmentDate: {
+    fontSize: 14,
+    color: '#6c757d',
+  },
+  appointmentStatus: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  appointmentStatusText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  noAppointmentsContainer: {
+    alignItems: 'center',
+    paddingVertical: 20,
+  },
+  noAppointmentsText: {
+    color: '#8E8E93',
+    fontSize: 14,
+    fontWeight: '500',
+    marginTop: 8,
+  },
+  enhancedSectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  enhancedSectionTitle: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#2E4053',
+    marginLeft: 8,
+  },
+  enhancedAddButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    backgroundColor: '#e8f1f9',
+    borderWidth: 1,
+    borderColor: '#cfe3f5',
+  },
+  enhancedAddButtonText: {
+    color: '#2E86C1',
+    fontWeight: '600',
+    marginLeft: 4,
+    fontSize: 14,
+  },
+  enhancedSearchRow: {
+    marginBottom: 16,
+  },
+  enhancedAddReportForm: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E3F2FD',
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 4,
+    padding: 16,
+    marginBottom: 16,
+  },
+  enhancedReportTypeRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  enhancedTypeOption: {
+    flex: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+    borderRadius: 8,
+    alignItems: 'center',
+    backgroundColor: '#fff',
+  },
+  enhancedTypeSelected: {
+    backgroundColor: '#2E86C1',
+    borderColor: '#2E86C1',
+  },
+  enhancedTypeText: {
+    color: '#2E4053',
+    fontWeight: '600',
+    fontSize: 12,
+  },
+  enhancedTypeSelectedText: {
+    color: '#fff',
+  },
+  enhancedAttachmentHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  enhancedAddFileButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+    backgroundColor: '#e8f1f9',
+  },
+  enhancedAddFileButtonText: {
+    color: '#2E86C1',
+    fontWeight: '600',
+    marginLeft: 4,
+    fontSize: 12,
+  },
+  enhancedAttachmentsList: {
+    marginTop: 12,
+  },
+  enhancedAttachmentPreviewCard: {
+    backgroundColor: '#f8f9fa',
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+  },
+  enhancedAttachmentPreviewContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  enhancedAttachmentPreviewInfo: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  enhancedAttachmentPreviewName: {
+    color: '#2E4053',
+    fontWeight: '600',
+    fontSize: 14,
+  },
+  enhancedAttachmentPreviewSize: {
+    color: '#6c757d',
+    fontSize: 12,
+    marginTop: 2,
+  },
+  enhancedRemoveAttachmentBtn: {
+    padding: 4,
+  },
+  enhancedAttachmentImagePreview: {
+    width: '100%',
+    height: 120,
+    marginTop: 12,
+    borderRadius: 8,
+  },
+  enhancedNoAttachmentsContainer: {
+    alignItems: 'center',
+    paddingVertical: 20,
+    backgroundColor: '#f8f9fa',
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#e9ecef',
+    borderStyle: 'dashed',
+  },
+  enhancedNoAttachmentsText: {
+    color: '#6c757d',
+    fontWeight: '600',
+    marginTop: 8,
+  },
+  enhancedNoAttachmentsSubText: {
+    color: '#6c757d',
+    fontSize: 12,
+    marginTop: 4,
+  },
+  enhancedFormActions: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 16,
+  },
+  enhancedCancelButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    borderRadius: 10,
+    backgroundColor: '#F8F9FA',
+    borderWidth: 1,
+    borderColor: '#E9ECEF',
+  },
+  enhancedCancelText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#6c757d',
+    marginLeft: 6,
+  },
+  enhancedSaveButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    borderRadius: 10,
+    backgroundColor: '#2E86C1',
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 4,
+  },
+  enhancedSaveButtonDisabled: {
+    backgroundColor: '#95a5a6',
+    opacity: 0.7,
+  },
+  enhancedSaveText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#fff',
+    marginLeft: 6,
+  },
+  enhancedReportCard: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+    padding: 16,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  enhancedEmptyState: {
+    alignItems: 'center',
+    paddingVertical: 30,
+    paddingHorizontal: 20,
+  },
+  enhancedEmptyTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#2E4053',
+    marginTop: 12,
+    textAlign: 'center',
+  },
+  enhancedEmptySubtitle: {
+    fontSize: 14,
+    color: '#6c757d',
+    marginTop: 4,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+
+});
+
+export default styles;
+
   medicineHeaderContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -3220,436 +3536,1807 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E3F2FD',
   },
- container: { flex: 1, backgroundColor: "#F9FAFB" },
-  scrollContent: { padding: 16, paddingBottom: 32 },
-
-  // Header
-  modernPatientProfileHeader: { marginBottom: 16 },
-  patientProfileGradient: {
-    backgroundColor: "#2E86C1",
-    padding: 20,
+  medicineHeaderIconContainer: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#E3F2FD',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 16,
+  },
+  medicineHeaderTextContainer: {
+    flex: 1,
+  },
+  medicineHeader: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: '#2E4053',
+    marginBottom: 4,
+  },
+  medicineSubHeader: {
+    fontSize: 14,
+    color: '#6c757d',
+    fontWeight: '500',
+  },
+  medicineStatsContainer: {
+    marginBottom: 20,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    marginBottom: 12,
+    gap: 12,
+  },
+  statCard: {
+    flex: 1,
+    alignItems: 'center',
+    padding: 16,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  statValue: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: '#2E4053',
+    marginTop: 8,
+    marginBottom: 4,
+  },
+  statLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#6c757d',
+    textAlign: 'center',
+  },
+  medicineSearchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#E3F2FD',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  medicineSearchInput: {
+    flex: 1,
+    fontSize: 16,
+    color: '#2E4053',
+    fontWeight: '500',
+  },
+  medicineCardsContainer: {
+    marginBottom: 20,
+  },
+  medicineCard: {
+    backgroundColor: '#fff',
     borderRadius: 16,
-    elevation: 5,
+    borderWidth: 1,
+    borderColor: '#E3F2FD',
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 4,
+    overflow: 'hidden',
+    padding: 16,
   },
-  backButton: {
-    backgroundColor: "#1B4F72",
-    padding: 8,
-    borderRadius: 50,
-    marginBottom: 16,
+  medicineCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
   },
-  patientProfileHeaderContent: { flexDirection: "row", alignItems: "center" },
-  patientProfileAvatar: { marginRight: 16 },
-  patientAvatarLarge: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    justifyContent: "center",
-    alignItems: "center",
+  medicineIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#E3F2FD',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
   },
-  patientProfileHeaderText: { flex: 1 },
-  patientProfileName: {
-    fontSize: 22,
-    fontWeight: "bold",
-    color: "#fff",
+  medicineMainInfo: {
+    flex: 1,
+  },
+  medicineName: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#2E4053',
     marginBottom: 6,
   },
-  patientProfileMeta: { flexDirection: "row", gap: 8 },
-  patientMetaBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "rgba(255,255,255,0.2)",
+  medicineStockContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  stockBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  stockBadgeText: {
+    fontSize: 12,
+    fontWeight: '600',
+    marginLeft: 4,
+  },
+  medicineStockInfo: {
+    marginBottom: 16,
+  },
+  stockDetailsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  stockText: {
+    fontSize: 14,
+    color: '#6c757d',
+    marginLeft: 6,
+  },
+  stockNumber: {
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  medicineActions: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  medicineActionBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+  },
+  prescribeBtn: {
+    backgroundColor: '#2E86C1',
+  },
+  prescribeBtnText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+    marginLeft: 6,
+  },
+  requestBtn: {
+    backgroundColor: '#FFF3E0',
+    borderWidth: 1,
+    borderColor: '#FFE0B2',
+  },
+  requestBtnText: {
+    color: '#FF9800',
+    fontSize: 14,
+    fontWeight: '600',
+    marginLeft: 6,
+  },
+  disabledBtn: {
+    backgroundColor: '#f8f9fa',
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+  },
+  disabledBtnText: {
+    color: '#ccc',
+  },
+  medicineEmptyState: {
+    alignItems: 'center',
+    paddingVertical: 60,
+    paddingHorizontal: 40,
+  },
+  quickActionsContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: '#E3F2FD',
+  },
+  quickActionsTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#2E4053',
+    marginBottom: 16,
+  },
+  bulkRequestBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FF9800',
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 4,
+  },
+  bulkRequestText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '700',
+    marginLeft: 8,
+  },
+  // Calendar Styles
+  calendarHeader: {
+    backgroundColor: '#fff',
+    paddingTop: 16,
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E9ECEF',
+  },
+  headerTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  headerLeft: {
+    flex: 1,
+  },
+  calendarTitle: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#2E4053',
+    marginBottom: 4,
+  },
+  doctorStatusContainer: {
+    marginTop: 4,
+  },
+  statusIndicator: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: 6,
+  },
+  doctorStatusText: {
+    fontSize: 14,
+    color: '#6c757d',
+    fontWeight: '500',
+  },
+  statusChangeBtn: {
+    marginLeft: 8,
+    padding: 4,
+  },
+  newAppointmentBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#2E86C1',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  newAppointmentText: {
+    color: '#fff',
+    fontWeight: '600',
+    marginLeft: 4,
+  },
+  dateNavigator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  navBtn: {
+    padding: 8,
+  },
+  datePickerBtn: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  selectedDateText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#2E4053',
+  },
+  viewSelector: {
+    flexDirection: 'row',
+    backgroundColor: '#F8F9FA',
+    borderRadius: 8,
+    padding: 4,
+  },
+  viewButton: {
+    flex: 1,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+    alignItems: 'center',
+  },
+  viewButtonActive: {
+    backgroundColor: '#2E86C1',
+  },
+  viewButtonText: {
+    fontSize: 14,
+    color: '#6c757d',
+    fontWeight: '600',
+  },
+  viewButtonTextActive: {
+    color: '#fff',
+  },
+  calendarContent: {
+    flex: 1,
+    backgroundColor: '#F8F9FA',
+  },
+  // Day View Styles
+  dayViewContainer: {
+    flex: 1,
+  },
+  timelineHeader: {
+    backgroundColor: '#fff',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E9ECEF',
+  },
+  dateHeaderText: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#2E4053',
+    textAlign: 'center',
+  },
+  timeSlot: {
+    flexDirection: 'row',
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F3F4',
+    minHeight: 80,
+  },
+  timeLabel: {
+    width: 80,
+    padding: 16,
+    borderRightWidth: 1,
+    borderRightColor: '#E9ECEF',
+    justifyContent: 'center',
+  },
+  timeLabelText: {
+    fontSize: 12,
+    color: '#6c757d',
+    fontWeight: '600',
+  },
+  slotContent: {
+    flex: 1,
+    padding: 8,
+  },
+  emptySlot: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F8F9FA',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E9ECEF',
+    borderStyle: 'dashed',
+  },
+  emptySlotText: {
+    color: '#8E8E93',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  // Appointment Card Styles
+  appointmentCard: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: '#E3F2FD',
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  compactCard: {
+    marginBottom: 4,
+    padding: 12,
+  },
+  appointmentHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 12,
+  },
+  // Modal Styles
+  modalContainer: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E9ECEF',
+  },
+  modalCloseBtn: {
+    width: 32,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#2E4053',
+  },
+  modalContent: {
+    flex: 1,
+  },
+  // Appointment Detail Styles
+  appointmentDetail: {
+    padding: 20,
+  },
+  detailPatientInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 24,
+    padding: 16,
+    backgroundColor: '#F8F9FA',
+    borderRadius: 12,
+  },
+  detailAvatarContainer: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#2E86C1',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 16,
+  },
+  detailAvatarText: {
+    color: '#fff',
+    fontSize: 24,
+    fontWeight: '700',
+  },
+  detailPatientDetails: {
+    flex: 1,
+  },
+  detailPatientName: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#2E4053',
+  },
+  detailPatientMeta: {
+    fontSize: 14,
+    color: '#6c757d',
+    marginTop: 4,
+  },
+  detailPatientContact: {
+    fontSize: 14,
+    color: '#2E86C1',
+    marginTop: 4,
+    fontWeight: '500',
+  },
+  detailAppointmentInfo: {
+    marginBottom: 24,
+  },
+  detailInfoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  detailInfoText: {
+    fontSize: 16,
+    color: '#2E4053',
+    marginLeft: 12,
+    flex: 1,
+  },
+  detailStatusBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    marginLeft: 12,
+  },
+  detailStatusText: {
+    fontSize: 12,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+  },
+  detailActions: {
+    gap: 12,
+  },
+  detailActionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+  },
+  primaryAction: {
+    backgroundColor: '#2E86C1',
+  },
+  secondaryAction: {
+    backgroundColor: '#F8F9FA',
+    borderWidth: 1,
+    borderColor: '#2E86C1',
+  },
+  outlineAction: {
+    backgroundColor: '#F8F9FA',
+    borderWidth: 1,
+    borderColor: '#E9ECEF',
+    flex: 1,
+  },
+  dangerAction: {
+    backgroundColor: '#FFF5F5',
+    borderWidth: 1,
+    borderColor: '#F44336',
+    flex: 1,
+  },
+  detailActionRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  detailActionText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: 8,
+  },
+  // Form Styles
+  appointmentForm: {
+    padding: 20,
+  },
+  formSectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#2E4053',
+    marginBottom: 20,
+  },
+  formGroup: {
+    marginBottom: 20,
+  },
+  formLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#2E4053',
+    marginBottom: 8,
+  },
+  formInput: {
+    borderWidth: 1,
+    borderColor: '#E9ECEF',
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: 16,
+    color: '#2E4053',
+    backgroundColor: '#fff',
+  },
+  durationSelector: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  durationOption: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    backgroundColor: '#F8F9FA',
+    borderWidth: 1,
+    borderColor: '#E9ECEF',
+    alignItems: 'center',
+  },
+  durationOptionActive: {
+    backgroundColor: '#2E86C1',
+    borderColor: '#2E86C1',
+  },
+  durationOptionText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#6c757d',
+  },
+  durationOptionTextActive: {
+    color: '#fff',
+  },
+  typeSelector: {
+    gap: 8,
+  },
+  typeOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    backgroundColor: '#F8F9FA',
+    borderWidth: 1,
+    borderColor: '#E9ECEF',
+  },
+  typeOptionActive: {
+    backgroundColor: '#2E86C1',
+    borderColor: '#2E86C1',
+  },
+  typeOptionText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#6c757d',
+    marginLeft: 12,
+  },
+  typeOptionTextActive: {
+    color: '#fff',
+  },
+  patientSelector: {
+    flexDirection: 'row',
+  },
+  patientOption: {
+    alignItems: 'center',
+    marginRight: 16,
+    padding: 8,
+  },
+  patientOptionActive: {
+    backgroundColor: '#E3F2FD',
+    borderRadius: 12,
+  },
+  formActions: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 20,
+  },
+  formCancelBtn: {
+    flex: 1,
+    paddingVertical: 14,
+    alignItems: 'center',
+    borderRadius: 8,
+    backgroundColor: '#F8F9FA',
+    borderWidth: 1,
+    borderColor: '#E9ECEF',
+  },
+  formCancelText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#6c757d',
+  },
+  formSaveBtn: {
+    flex: 2,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    borderRadius: 8,
+    backgroundColor: '#2E86C1',
+  },
+  formSaveText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
+    marginLeft: 8,
+  },
+  // Doctor Status Styles
+  statusLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#2E4053',
+    marginBottom: 8,
+  },
+  statusScrollView: {
+    flexDirection: 'row',
+  },
+  statusScrollContent: {
+    paddingHorizontal: 4,
+  },
+  statusOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    marginHorizontal: 4,
+    minWidth: 100,
+    justifyContent: 'center',
+  },
+  statusOptionActive: {
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  statusOptionText: {
+    fontSize: 13,
+    fontWeight: '600',
+    marginLeft: 6,
+  },
+  // Compact Status Styles (for horizontal layout)
+  compactStatusScrollView: {
+    flexDirection: 'row',
+  },
+  compactStatusScrollContent: {
+    paddingHorizontal: 4,
+  },
+  compactStatusOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 16,
+    marginHorizontal: 3,
+    minWidth: 70,
+    justifyContent: 'center',
+    borderWidth: 1.5,
+  },
+  compactStatusOptionActive: {
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 4,
+  },
+  compactStatusOptionText: {
+    fontSize: 11,
+    fontWeight: '600',
+    marginLeft: 4,
+  },
+  // Enhanced Doctor Status Grid
+  statusGridContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  statusGridOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '48%',
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    borderRadius: 12,
+    marginBottom: 8,
+    borderWidth: 2,
+  },
+  statusGridOptionActive: {
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  statusGridOptionText: {
+    fontSize: 12,
+    fontWeight: '600',
+    marginLeft: 6,
+  },
+  // Compact Status Styles (for scrollable one-line layout)
+  compactStatusScrollView: {
+    flexDirection: 'row',
+  },
+  compactStatusScrollContent: {
+    paddingHorizontal: 4,
+  },
+  compactStatusOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 16,
+    marginHorizontal: 4,
+    borderWidth: 1,
+  },
+  compactStatusOptionActive: {
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 4,
+  },
+  compactStatusOptionText: {
+    fontSize: 11,
+    fontWeight: '600',
+    marginLeft: 4,
+  },
+  // Enhanced New Appointment Button
+  enhancedNewAppointmentBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#2E86C1',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 25,
+    shadowColor: '#2E86C1',
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  newAppointmentIcon: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8,
+  },
+  enhancedNewAppointmentText: {
+    color: '#fff',
+    fontWeight: '700',
+    fontSize: 16,
+  },
+  // Unavailable Slot Styles
+  unavailableToggle: {
+    padding: 4,
+    marginTop: 4,
+  },
+  unavailableSlot: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFEBEE',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#F44336',
+    padding: 12,
+  },
+  unavailableSlotText: {
+    color: '#F44336',
+    fontSize: 14,
+    fontWeight: '600',
+    marginLeft: 8,
+  },
+  // Empty Slot Container and Toggle Styles
+  emptySlotContainer: {
+    flex: 1,
+    gap: 8,
+  },
+  toggleAvailabilityBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFEBEE',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#F44336',
+    padding: 8,
+  },
+  toggleAvailabilityText: {
+    color: '#F44336',
+    fontSize: 12,
+    fontWeight: '600',
+    marginLeft: 4,
+  },
+  // Agenda View Styles
+  agendaStatsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+    paddingHorizontal: 16,
+  },
+  agendaStatCard: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    alignItems: 'center',
+    flex: 1,
+    marginHorizontal: 4,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  agendaStatNumber: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: '#2E4053',
+    marginTop: 8,
+  },
+  agendaStatLabel: {
+    fontSize: 12,
+    color: '#6c757d',
+    fontWeight: '600',
+    marginTop: 4,
+  },
+  currentAppointmentSection: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    margin: 16,
+    padding: 16,
+    borderLeftWidth: 4,
+    borderLeftColor: '#4CAF50',
+    shadowColor: '#4CAF50',
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  currentAppointmentHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  currentAppointmentTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#4CAF50',
+    marginLeft: 8,
+    flex: 1,
+  },
+  liveIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#4CAF50',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
-    marginRight: 8,
   },
-  patientMetaBadgeText: { color: "#fff", marginLeft: 4, fontSize: 12 },
-
-  quickActionButtons: { flexDirection: "row", marginTop: 12 },
-  quickActionButton: {
-    backgroundColor: "#1B4F72",
-    padding: 10,
-    borderRadius: 30,
-    marginRight: 12,
+  liveDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#fff',
+    marginRight: 4,
   },
-
-  // Info
-  patientInfoSection: { marginTop: 16 },
-  modernInfoCard: {
-    backgroundColor: "#fff",
-    padding: 16,
+  liveText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: '700',
+  },
+  nextAppointmentSection: {
+    backgroundColor: '#fff',
     borderRadius: 16,
-    marginBottom: 16,
-    elevation: 3,
+    margin: 16,
+    padding: 16,
+    borderLeftWidth: 4,
+    borderLeftColor: '#FF9800',
+    shadowColor: '#FF9800',
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    elevation: 6,
   },
-  infoCardHeader: { flexDirection: "row", alignItems: "center", marginBottom: 12 },
-  infoCardTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#2E2E2E",
-    marginLeft: 8,
-  },
-  infoCardContent: { marginTop: 8 },
-  infoRow: { flexDirection: "row", alignItems: "center", marginBottom: 8 },
-  infoLabel: { fontSize: 14, fontWeight: "600", marginLeft: 6, marginRight: 4 },
-  infoValue: { fontSize: 14, color: "#555" },
-  infoRowFull: { flexDirection: "row", alignItems: "center", marginTop: 8 },
-  infoValueFull: { fontSize: 14, color: "#555", marginTop: 4 },
-
-  // Reports
-  reportsSection: { marginTop: 16 },
-  modernSectionHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+  nextAppointmentHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 12,
   },
-  sectionHeaderLeft: { flexDirection: "row", alignItems: "center" },
-  modernSectionTitle: {
+  nextAppointmentTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#FF9800',
+    marginLeft: 8,
+    flex: 1,
+  },
+  nextAppointmentTime: {
+    fontSize: 12,
+    color: '#FF9800',
+    fontWeight: '600',
+  },
+  timelineSection: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    margin: 16,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  timelineSectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  timelineSectionTitle: {
     fontSize: 18,
-    fontWeight: "bold",
+    fontWeight: '700',
+    color: '#2E4053',
     marginLeft: 8,
-    color: "#2E2E2E",
   },
-  reportsBadge: {
-    backgroundColor: "#FF9800",
-    paddingHorizontal: 8,
-    paddingVertical: 2,
+  timelineContainer: {
+    paddingLeft: 8,
+  },
+  timelineItem: {
+    flexDirection: 'row',
+    marginBottom: 16,
+  },
+  timelineItemLeft: {
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  timelineMarker: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  timelineMarkerCurrent: {
+    backgroundColor: '#4CAF50',
+  },
+  timelineMarkerPast: {
+    backgroundColor: '#6c757d',
+  },
+  timelineMarkerFuture: {
+    backgroundColor: '#2E86C1',
+  },
+  timelineLine: {
+    width: 2,
+    flex: 1,
+    marginTop: 4,
+  },
+  timelineLinePast: {
+    backgroundColor: '#6c757d',
+  },
+  timelineLineFuture: {
+    backgroundColor: '#E9ECEF',
+  },
+  timelineItemRight: {
+    flex: 1,
+  },
+  timelineTime: {
+    fontSize: 12,
+    color: '#6c757d',
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  emptyTimelineContainer: {
+    alignItems: 'center',
+    paddingVertical: 32,
+  },
+  emptyTimelineText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#6c757d',
+    marginTop: 16,
+  },
+  emptyTimelineSubText: {
+    fontSize: 14,
+    color: '#8E8E93',
+    marginTop: 4,
+  },
+  quickActionsSection: {
+    margin: 16,
+  },
+  quickActionsSectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#2E4053',
+    marginBottom: 16,
+  },
+  quickActionsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  quickActionCard: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    alignItems: 'center',
+    width: '48%',
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  quickActionText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#2E4053',
+    marginTop: 8,
+  },
+  highlightedCard: {
+    borderWidth: 2,
+    borderColor: '#4CAF50',
+    shadowColor: '#4CAF50',
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  customTaskAvatar: {
+    backgroundColor: '#FF9800',
+  },
+  // Modal Enhancement Styles
+  appointmentTypeToggle: {
+    flexDirection: 'row',
+    backgroundColor: '#F8F9FA',
+    borderRadius: 12,
+    padding: 4,
+    marginBottom: 20,
+  },
+  appointmentToggleBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+  },
+  appointmentToggleBtnActive: {
+    backgroundColor: '#2E86C1',
+  },
+  appointmentToggleText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#2E86C1',
+    marginLeft: 8,
+  },
+  appointmentToggleTextActive: {
+    color: '#fff',
+  },
+  taskInput: {
+    minHeight: 80,
+    textAlignVertical: 'top',
+  },
+  patientSectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  closeSearchBtn: {
+    padding: 4,
+  },
+  patientSearchContainer: {
+    marginBottom: 16,
+  },
+  patientSearchInput: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F8F9FA',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginBottom: 12,
+  },
+  searchInput: {
+    flex: 1,
+    marginLeft: 8,
+    fontSize: 16,
+  },
+  patientSearchResults: {
+    maxHeight: 200,
+    backgroundColor: '#F8F9FA',
+    borderRadius: 8,
+  },
+  patientSearchItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E9ECEF',
+  },
+  patientSearchItemSelected: {
+    backgroundColor: '#E3F2FD',
+  },
+  patientSearchAvatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#2E86C1',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  patientSearchAvatarText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 16,
+  },
+  patientSearchInfo: {
+    flex: 1,
+  },
+  patientSearchName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#2E4053',
+  },
+  patientSearchMeta: {
+    fontSize: 12,
+    color: '#6c757d',
+    marginTop: 2,
+  },
+  searchMorePatientsBtn: {
+    alignItems: 'center',
+    padding: 8,
+    marginLeft: 8,
+  },
+  searchMorePatientsText: {
+    fontSize: 12,
+    color: '#2E86C1',
+    fontWeight: '600',
+    marginTop: 4,
+  },
+  
+  // Mark as Treated Button Styles
+  markTreatedButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#28A745',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    marginTop: 16,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  markTreatedText: {
+    color: '#fff',
+    fontWeight: '700',
+    fontSize: 16,
+    marginLeft: 8,
+  },
+
+  // Modern Patient List Styles
+  modernPatientHeader: {
+    marginBottom: 16,
+  },
+  headerGradient: {
+    backgroundColor: '#2E86C1',
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  headerContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
+  },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  headerIconWrapper: {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 12,
+    padding: 8,
+    marginRight: 12,
+  },
+  modernHeaderTitle: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#fff',
+  },
+  modernHeaderSubtitle: {
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.8)',
+    marginTop: 2,
+  },
+  modernAddBtn: {
+    backgroundColor: '#fff',
     borderRadius: 10,
+    padding: 8,
+  },
+
+  // Statistics Cards
+  statsContainer: {
+    marginBottom: 16,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  statCard: {
+    flex: 1,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    alignItems: 'center',
+    marginHorizontal: 4,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  statNumber: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#2E4053',
+    marginTop: 8,
+  },
+  statLabel: {
+    fontSize: 12,
+    color: '#8E8E93',
+    marginTop: 4,
+    fontWeight: '600',
+  },
+
+  // Search and Filter Styles
+  searchFilterContainer: {
+    marginBottom: 16,
+  },
+  modernSearchContainer: {
+    marginBottom: 12,
+  },
+  searchInputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  searchIcon: {
+    marginRight: 12,
+  },
+  modernSearchInput: {
+    flex: 1,
+    fontSize: 16,
+    color: '#2E4053',
+  },
+  clearBtn: {
+    padding: 4,
+  },
+
+  // Filter Chips
+  filterContainer: {
+    marginBottom: 8,
+  },
+  filterScroll: {
+    paddingVertical: 4,
+  },
+  filterChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    marginRight: 8,
+    borderWidth: 1,
+    borderColor: '#E9ECEF',
+  },
+  filterChipActive: {
+    backgroundColor: '#2E86C1',
+    borderColor: '#2E86C1',
+  },
+  filterChipText: {
+    marginLeft: 6,
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#2E86C1',
+  },
+  filterChipActiveText: {
+    color: '#fff',
+  },
+  filterDivider: {
+    width: 1,
+    height: 20,
+    backgroundColor: '#E9ECEF',
+    marginHorizontal: 8,
+  },
+
+  // Modern Patient Cards
+  modernPatientList: {
+    gap: 12,
+  },
+  modernPatientCard: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  modernPatientCardContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  modernPatientAvatar: {
+    marginRight: 16,
+  },
+  avatarBackground: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modernPatientInfo: {
+    flex: 1,
+  },
+  modernPatientName: {
+    fontSize: 18,
+  },
+  modernBackButtonText: {
+    color: '#2E86C1',
+    fontSize: 16,
+    fontWeight: '700',
     marginLeft: 8,
   },
-  reportsBadgeText: { color: "#fff", fontWeight: "bold", fontSize: 12 },
-  modernAddButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#E3F2FD",
+  
+  // Patient Selector Modal Styles
+  modalContainer: {
+    flex: 1,
+    backgroundColor: '#fff'
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+    backgroundColor: '#F8F9FA'
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#2E4053'
+  },
+  modalContent: {
+    flex: 1,
+    padding: 16
+  },
+  patientItem: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2
+  },
+  selectedPatientItem: {
+    borderColor: '#4CAF50',
+    backgroundColor: '#F8F5FF'
+  },
+  patientInfoRow: {
+    flexDirection: 'row',
+    alignItems: 'center'
+  },
+  patientAvatarSmall: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#2E86C1',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12
+  },
+  avatarTextSmall: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#fff'
+  },
+  patientDetailsSmall: {
+    flex: 1
+  },
+  patientNameSmall: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#2E4053',
+    marginBottom: 2
+  },
+  patientMetaSmall: {
+    fontSize: 12,
+    color: '#8E8E93'
+  },
+  emptyState: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 60
+  },
+  emptyText: {
+    marginTop: 16,
+    fontSize: 18,
+    color: '#6C757D',
+    fontWeight: '600'
+  },
+  emptySubText: {
+    fontSize: 14,
+    color: '#8E8E93',
+    marginTop: 8,
+    textAlign: 'center',
+    lineHeight: 20
+  },
+
+  // Enhanced Patient Profile Styles
+  enhancedPatientProfileHeader: {
+    marginBottom: 16,
+  },
+  patientStatsContainer: {
+    flexDirection: 'row',
+    marginTop: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 12,
+    padding: 8,
+  },
+  patientStatItem: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  patientStatNumber: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#fff',
+  },
+  patientStatLabel: {
+    fontSize: 12,
+    color: 'rgba(255, 255, 255, 0.8)',
+    marginTop: 2,
+  },
+  enhancedInfoCard: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E3F2FD',
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 4,
+    padding: 16,
+    marginBottom: 16,
+  },
+  appointmentRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f3f4',
+  },
+  appointmentRowLast: {
+    borderBottomWidth: 0,
+  },
+  appointmentIcon: {
+    marginRight: 12,
+  },
+  appointmentDetails: {
+    flex: 1,
+  },
+  appointmentTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#2E4053',
+    marginBottom: 2,
+  },
+  appointmentDate: {
+    fontSize: 14,
+    color: '#6c757d',
+  },
+  appointmentStatus: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  appointmentStatusText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  noAppointmentsContainer: {
+    alignItems: 'center',
+    paddingVertical: 20,
+  },
+  noAppointmentsText: {
+    color: '#8E8E93',
+    fontSize: 14,
+    fontWeight: '500',
+    marginTop: 8,
+  },
+  enhancedSectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  enhancedSectionTitle: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#2E4053',
+    marginLeft: 8,
+  },
+  enhancedAddButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    backgroundColor: '#e8f1f9',
+    borderWidth: 1,
+    borderColor: '#cfe3f5',
+  },
+  enhancedAddButtonText: {
+    color: '#2E86C1',
+    fontWeight: '600',
+    marginLeft: 4,
+    fontSize: 14,
+  },
+  enhancedSearchRow: {
+    marginBottom: 16,
+  },
+  enhancedAddReportForm: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E3F2FD',
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 4,
+    padding: 16,
+    marginBottom: 16,
+  },
+  enhancedReportTypeRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  enhancedTypeOption: {
+    flex: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+    borderRadius: 8,
+    alignItems: 'center',
+    backgroundColor: '#fff',
+  },
+  enhancedTypeSelected: {
+    backgroundColor: '#2E86C1',
+    borderColor: '#2E86C1',
+  },
+  enhancedTypeText: {
+    color: '#2E4053',
+    fontWeight: '600',
+    fontSize: 12,
+  },
+  enhancedTypeSelectedText: {
+    color: '#fff',
+  },
+  enhancedAttachmentHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  enhancedAddFileButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 20,
+    borderRadius: 6,
+    backgroundColor: '#e8f1f9',
   },
-  modernAddButtonText: {
-    color: "#2E86C1",
+  enhancedAddFileButtonText: {
+    color: '#2E86C1',
+    fontWeight: '600',
     marginLeft: 4,
-    fontWeight: "600",
+    fontSize: 12,
   },
-// Add Report Form Styles
-modernAddReportForm: {
-  backgroundColor: "#fff",
-  borderRadius: 16,
-  padding: 16,
-  marginTop: 12,
-  marginBottom: 20,
-  elevation: 4,
-},
-
-addReportFormHeader: {
-  flexDirection: "row",
-  alignItems: "center",
-  justifyContent: "space-between",
-  marginBottom: 16,
-},
-addReportFormTitle: {
-  flex: 1,
-  fontSize: 18,
-  fontWeight: "bold",
-  color: "#2E2E2E",
-  marginLeft: 8,
-},
-closeFormButton: {
-  backgroundColor: "#F0F0F0",
-  padding: 6,
-  borderRadius: 20,
-},
-
-modernFormCard: {
-  backgroundColor: "#F9FAFB",
-  padding: 14,
-  borderRadius: 12,
-},
-
-// Inputs
-modernInputGroup: { marginBottom: 16 },
-modernLabel: {
-  fontSize: 14,
-  fontWeight: "600",
-  color: "#2E2E2E",
-  marginBottom: 6,
-},
-modernTextInput: {
-  backgroundColor: "#fff",
-  borderWidth: 1,
-  borderColor: "#E0E0E0",
-  borderRadius: 10,
-  paddingHorizontal: 12,
-  paddingVertical: 10,
-  fontSize: 14,
-  color: "#333",
-},
-modernTextArea: {
-  height: 100,
-  textAlignVertical: "top",
-},
-
-// Report type
-modernReportTypeRow: {
-  flexDirection: "row",
-  flexWrap: "wrap",
-  gap: 8,
-  marginTop: 6,
-},
-modernTypeOption: {
-  flexDirection: "row",
-  alignItems: "center",
-  paddingHorizontal: 12,
-  paddingVertical: 8,
-  borderWidth: 1,
-  borderColor: "#2E86C1",
-  borderRadius: 20,
-  marginRight: 8,
-  marginBottom: 8,
-},
-modernTypeSelected: {
-  backgroundColor: "#2E86C1",
-  borderColor: "#2E86C1",
-},
-modernTypeText: {
-  marginLeft: 6,
-  fontSize: 13,
-  color: "#2E86C1",
-  fontWeight: "500",
-},
-modernTypeSelectedText: { color: "#fff" },
-
-// Attachments
-modernAttachmentHeader: {
-  flexDirection: "row",
-  justifyContent: "space-between",
-  alignItems: "center",
-  marginBottom: 8,
-},
-modernAddFileButton: {
-  flexDirection: "row",
-  alignItems: "center",
-  backgroundColor: "#E3F2FD",
-  paddingHorizontal: 10,
-  paddingVertical: 6,
-  borderRadius: 20,
-},
-modernAddFileButtonText: {
-  marginLeft: 4,
-  fontSize: 13,
-  fontWeight: "600",
-  color: "#2E86C1",
-},
-
-modernAttachmentsList: { marginTop: 8 },
-modernAttachmentPreviewCard: {
-  backgroundColor: "#fff",
-  borderWidth: 1,
-  borderColor: "#E0E0E0",
-  borderRadius: 12,
-  padding: 10,
-  marginBottom: 12,
-},
-modernAttachmentPreviewContent: {
-  flexDirection: "row",
-  alignItems: "center",
-},
-modernAttachmentPreviewInfo: { flex: 1, marginLeft: 10 },
-modernAttachmentPreviewName: {
-  fontSize: 14,
-  fontWeight: "600",
-  color: "#2E2E2E",
-},
-modernAttachmentPreviewSize: {
-  fontSize: 12,
-  color: "#6c757d",
-},
-modernRemoveAttachmentBtn: {
-  backgroundColor: "#F8D7DA",
-  padding: 4,
-  borderRadius: 20,
-  marginLeft: 8,
-},
-modernAttachmentImagePreview: {
-  width: "100%",
-  height: 150,
-  borderRadius: 10,
-  marginTop: 8,
-},
-
-modernNoAttachmentsContainer: {
-  alignItems: "center",
-  justifyContent: "center",
-  padding: 20,
-  borderWidth: 1,
-  borderColor: "#E0E0E0",
-  borderStyle: "dashed",
-  borderRadius: 12,
-  marginTop: 8,
-},
-modernNoAttachmentsText: {
-  fontSize: 14,
-  fontWeight: "600",
-  color: "#555",
-  marginTop: 8,
-},
-modernNoAttachmentsSubText: {
-  fontSize: 12,
-  color: "#8E8E93",
-  marginTop: 2,
-},
-
-// Actions
-modernFormActions: {
-  flexDirection: "row",
-  justifyContent: "flex-end",
-  alignItems: "center",
-  marginTop: 16,
-  gap: 10,
-},
-modernCancelButton: {
-  flexDirection: "row",
-  alignItems: "center",
-  backgroundColor: "#F0F0F0",
-  paddingHorizontal: 12,
-  paddingVertical: 8,
-  borderRadius: 20,
-},
-modernCancelText: {
-  marginLeft: 4,
-  fontSize: 13,
-  fontWeight: "600",
-  color: "#6c757d",
-},
-modernSaveButton: {
-  flexDirection: "row",
-  alignItems: "center",
-  backgroundColor: "#2E86C1",
-  paddingHorizontal: 16,
-  paddingVertical: 10,
-  borderRadius: 20,
-},
-modernSaveButtonDisabled: { backgroundColor: "#A9CCE3" },
-modernSaveText: {
-  marginLeft: 6,
-  fontSize: 14,
-  fontWeight: "600",
-  color: "#fff",
-},
-// Reports Container
-reportsContainer: {
-  marginTop: 16,
-  marginBottom: 20,
-},
-
-// Report Card
-modernReportCard: {
-  backgroundColor: "#fff",
-  borderRadius: 14,
-  padding: 14,
-  marginBottom: 12,
-  elevation: 3,
-  shadowColor: "#000",
-  shadowOpacity: 0.08,
-  shadowOffset: { width: 0, height: 2 },
-  shadowRadius: 4,
-},
-
-reportCardHeader: {
-  flexDirection: "row",
-  alignItems: "center",
-  marginBottom: 8,
-},
-
-reportTypeIcon: {
-  backgroundColor: "#2E86C1",
-  padding: 8,
-  borderRadius: 10,
-  justifyContent: "center",
-  alignItems: "center",
-  marginRight: 10,
-},
-
-reportCardInfo: { flex: 1 },
-
-reportCardTitle: {
-  fontSize: 16,
-  fontWeight: "700",
-  color: "#2E2E2E",
-  marginBottom: 2,
-},
-
-reportCardMeta: {
-  flexDirection: "row",
-  alignItems: "center",
-  gap: 10,
-},
-
-reportStatusBadge: {
-  backgroundColor: "#E3F2FD",
-  paddingHorizontal: 8,
-  paddingVertical: 2,
-  borderRadius: 8,
-},
-reportStatusText: {
-  fontSize: 11,
-  fontWeight: "700",
-  color: "#2E86C1",
-  letterSpacing: 0.5,
-},
-
-reportCardDate: {
-  fontSize: 12,
-  color: "#6c757d",
-},
-
-// Preview Text
-reportCardPreview: {
-  fontSize: 13,
-  color: "#4A4A4A",
-  marginTop: 4,
-  marginBottom: 6,
-  lineHeight: 18,
-},
-
-// Footer
-reportCardFooter: {
-  flexDirection: "row",
-  alignItems: "center",
-  marginTop: 6,
-},
-reportCardAttachments: {
-  fontSize: 12,
-  color: "#555",
-  marginLeft: 4,
-},
-reportCardUploader: {
-  fontSize: 12,
-  color: "#888",
-  marginLeft: 10,
-  fontStyle: "italic",
-},
-
-// Empty State
-modernEmptyState: {
-  justifyContent: "center",
-  alignItems: "center",
-  paddingVertical: 40,
-  paddingHorizontal: 20,
-},
-modernEmptyTitle: {
-  fontSize: 16,
-  fontWeight: "700",
-  color: "#333",
-  marginTop: 10,
-},
-modernEmptySubtitle: {
-  fontSize: 13,
-  color: "#777",
-  marginTop: 4,
-  textAlign: "center",
-},
+  enhancedAttachmentsList: {
+    marginTop: 12,
+  },
+  enhancedAttachmentPreviewCard: {
+    backgroundColor: '#f8f9fa',
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+  },
+  enhancedAttachmentPreviewContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  enhancedAttachmentPreviewInfo: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  enhancedAttachmentPreviewName: {
+    color: '#2E4053',
+    fontWeight: '600',
+    fontSize: 14,
+  },
+  enhancedAttachmentPreviewSize: {
+    color: '#6c757d',
+    fontSize: 12,
+    marginTop: 2,
+  },
+  enhancedRemoveAttachmentBtn: {
+    padding: 4,
+  },
+  enhancedAttachmentImagePreview: {
+    width: '100%',
+    height: 120,
+    marginTop: 12,
+    borderRadius: 8,
+  },
+  enhancedNoAttachmentsContainer: {
+    alignItems: 'center',
+    paddingVertical: 20,
+    backgroundColor: '#f8f9fa',
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#e9ecef',
+    borderStyle: 'dashed',
+  },
+  enhancedNoAttachmentsText: {
+    color: '#6c757d',
+    fontWeight: '600',
+    marginTop: 8,
+  },
+  enhancedNoAttachmentsSubText: {
+    color: '#6c757d',
+    fontSize: 12,
+    marginTop: 4,
+  },
+  enhancedFormActions: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 16,
+  },
+  enhancedCancelButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    borderRadius: 10,
+    backgroundColor: '#F8F9FA',
+    borderWidth: 1,
+    borderColor: '#E9ECEF',
+  },
+  enhancedCancelText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#6c757d',
+    marginLeft: 6,
+  },
+  enhancedSaveButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    borderRadius: 10,
+    backgroundColor: '#2E86C1',
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 4,
+  },
+  enhancedSaveButtonDisabled: {
+    backgroundColor: '#95a5a6',
+    opacity: 0.7,
+  },
+  enhancedSaveText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#fff',
+    marginLeft: 6,
+  },
+  enhancedReportCard: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+    padding: 16,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  enhancedEmptyState: {
+    alignItems: 'center',
+    paddingVertical: 30,
+    paddingHorizontal: 20,
+  },
+  enhancedEmptyTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#2E4053',
+    marginTop: 12,
+    textAlign: 'center',
+  },
+  enhancedEmptySubtitle: {
+    fontSize: 14,
+    color: '#6c757d',
+    marginTop: 4,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
 
 });
 

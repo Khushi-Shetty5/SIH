@@ -326,92 +326,66 @@
 // });
 
 import React from "react";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { DoctorProvider } from "../context/DoctorContext";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 
-// Import screens from DoctorScreens.js
-import {
-  EmergencyScreen,
-  PatientList,
-  PatientProfile,
-  LabReports,
-  Medicines,
-  Calendar,
-  DoctorProfile,
-} from "./DoctorScreens";
-import VideoCallScreen from "../lab/VideoCallScreen"; // correct path
-import VideoCallRequestsScreen from "../lab/VideoCallRequestsScreen";
+// Import the screens we've created
+import DoctorHomeScreen from "./DoctorHomeScreen";
+import PatientListScreen from "./PatientListScreen";
+import EmergencyScreen from "./EmergencyScreen";
+import AddEmergency from "./AddEmergency";
+import TestEmergency from "./TestEmergency";
+import VideoCallScreen from "./VideoCallScreen";
+
+// Import existing screens
+import { AddPatient } from "./DoctorScreens";
+import { PatientDetail } from "../lab/PatientDetail";
+import { PatientSearch } from "../lab/PatientSearch";
+import ReportDetail from "../lab/ReportDetail";
+import { LabRecordsScreen, PatientReportsScreen } from "./LabReports";
+import { PatientProfile } from "./DoctorScreens";
+import Medicines from "./Medicines";
+import { Calendar } from "../context/Calendar";
+import DoctorProfile from "./DoctorProfile";
 
 const Stack = createNativeStackNavigator();
 
 export default function DoctorNavigator() {
   return (
-    <DoctorProvider>
-      <Stack.Navigator
-        screenOptions={{
+    <Stack.Navigator>
+      <Stack.Screen 
+        name="DoctorHome" 
+        component={DoctorHomeScreen} 
+        options={{ 
+          headerShown: true,
+          title: "Doctor Dashboard",
           headerStyle: { backgroundColor: "#2E86C1" },
-          headerTintColor: "#fff",
-          headerTitleStyle: { fontWeight: "bold" },
-          animation: "slide_from_right",
-          gestureEnabled: true,
-        }}
-      >
-        <Stack.Screen
-          name="DoctorHome"
-          component={require("./DoctorHomeScreen").default}
-          options={{ title: "Doctor Dashboard" }}
-        />
-        <Stack.Screen
-          name="Emergency"
-          component={EmergencyScreen}
-          options={{ title: "Emergency Cases" }}
-        />
-        <Stack.Screen
-          name="PatientList"
-          component={PatientList}
-          options={{ title: "Patients" }}
-        />
-        <Stack.Screen
-          name="VideoCallRequests"
-          component={VideoCallRequestsScreen}
-          options={{ title: "Video Call Requests" }}
-        />
-        <Stack.Screen
-          name="VideoCallScreen"
-          component={VideoCallScreen}
-          options={{ title: "Emergency Video Call" }}
-        />
-        <Stack.Screen
-          name="PatientProfile"
-          component={PatientProfile}
-          options={{ title: "Patient Profile" }}
-        />
-        <Stack.Screen
-          name="LabReports"
-          component={LabReports}
-          options={{ title: "Lab Reports" }}
-        />
-        <Stack.Screen
-          name="Medicines"
-          component={Medicines}
-          options={{ title: "Medicines" }}
-        />
-        <Stack.Screen
-          name="Calendar"
-          component={Calendar}
-          options={{ title: "Appointments" }}
-        />
-        <Stack.Screen
-          name="DoctorProfile"
-          component={DoctorProfile}
-          options={{ title: "Profile & Settings" }}
-        />
-        <Stack.Screen
-          name="Notifications"
-          component={require("../lab/Notifications").default}
-          options={{ title: "Notifications" }}
-        />
-      </Stack.Navigator>
+          headerTintColor: "#fff"
+        }} 
+      />
+      <Stack.Screen name="Emergency" component={EmergencyScreen} options={{ title: "Emergency Cases", headerStyle: { backgroundColor: "#FF4757" }, headerTintColor: "#fff" }} />
+      <Stack.Screen name="AddEmergency" component={AddEmergency} options={{ title: "Add Emergency" }} />
+      <Stack.Screen name="TestEmergency" component={TestEmergency} options={{ title: "Test Emergency" }} />
+      <Stack.Screen name="PatientList" component={PatientListScreen} options={{ title: "Patients" }} />
+      <Stack.Screen name="PatientProfile" component={PatientProfile} options={{ title: "Patient Profile" }} />
+      <Stack.Screen name="AddPatient" component={AddPatient} options={{ title: "Add Patient" }} />
+      <Stack.Screen name="ReportDetail" component={ReportDetail} options={{ title: "Report Details" }} />
+      <Stack.Screen name="LabReports" component={LabRecordsScreen} options={{ title: "Lab Records" }} />
+      <Stack.Screen name="PatientReports" component={PatientReportsScreen} options={{ title: "Patient Reports" }} />
+      <Stack.Screen name="Medicines" component={Medicines} options={{ title: "Medicines" }} />
+      <Stack.Screen name="Calendar" component={Calendar} options={{ title: "Calendar" }} />
+      <Stack.Screen name="VideoCall" component={VideoCallScreen} options={{ title: "Video Call" }} />
+      <Stack.Screen name="DoctorProfile" component={DoctorProfile} options={{ title: "Profile" }} />
+    </Stack.Navigator>
+  );
+}
+
+// Wrap the navigator with DoctorProvider in a separate component
+export function DoctorApp() {
+  return (
+    <DoctorProvider>
+      <DoctorNavigator />
     </DoctorProvider>
   );
 }

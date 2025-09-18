@@ -300,136 +300,258 @@
 // });
 
 import React from "react";
+import { useState,useEffect,useRef } from "react";
 import {
   View,
   Text,
+  TextInput,
   StyleSheet,
   TouchableOpacity,
-  Linking,
+  FlatList,
+  Alert,
   ScrollView,
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
-import * as Print from "expo-print";
-import * as Sharing from "expo-sharing";
-import { useNavigation } from "@react-navigation/native";
+import * as DocumentPicker from "expo-document-picker";
+import { useLab } from "../context/LabContext";
+import { useToast } from "../context/ToastContext";
 
-export default function ReportDetail({ route }) {
-  const { report } = route.params || {};
-  const navigation = useNavigation();
+export default function UploadReport({ route, navigation }) {
+  const { patients, addManualReport, addPdfReport } = useLab();
+  const { show } = useToast();
+  const [patientId, setPatientId] = useState("");
+  const [title, setTitle] = useState("");
+  const [reportDetails, setReportDetails] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [patient, setPatient] = useState(null);
 
-  if (!report) {
-    return (
-      <View style={styles.container}>
-        <Text style={{ color: "#6c757d" }}>Report not found.</Text>
-      </View>
-    );
-  }
+  useEffect(() => {
+    if (route?.params?.patientId) {
+      const patientIdFromParams = route.params.patientId;
+      setPatientId(patientIdFromParams);
+      
+      // Find patient details
+      const foundPatient = patients.find(p => p._id === patientIdFromParams);
+      setPatient(foundPatient);
+    }
+  }, [route?.params?.patientId, patients]);
 
-  const openPdf = () => {
-    if (report.type === "pdf" && report.fileUri) {
-      Linking.openURL(report.fileUri).catch(() => {});
+  const handleManualUpload = async () => {
+    if (!patientId) {
+      show("Please select a patient", "danger");
+      return;
+    }
+    
+    if (!reportDetails && !selectedFile) {
+      show("Please enter report details or attach a file", "danger");
+      return;
+    }
+    
+    setLoading(true);
+    try {
+      // Using a default doctor ID for demonstration
+      // In a real app, this would come from authentication
+      const doctorId = "68cb7fd9a0b6194b8ede0320";
+      
+      await addManualReport(patientId, title, reportDetails, doctorId);
+      setReportDetails("");
+      setTitle("");
+      setSelectedFile(null);
+      show("Report saved successfully", "success");
+      
+      // Navigate back to patient detail or patient search
+      if (route?.params?.from === 'PatientDetail') {
+        navigation.goBack();
+      } else {
+        navigation.navigate("PatientSearch");
+      }
+    } catch (error) {
+      console.error("Error in handleManualUpload:", error);
+      show("Failed to save report: " + (error.response?.data?.message || error.message), "danger");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const shareOrGeneratePdf = async () => {
+  const handlePickPdf = async () => {
     try {
-      if (report.type === "pdf" && report.fileUri) {
-        await Sharing.shareAsync(report.fileUri);
-        return;
+      const res = await DocumentPicker.getDocumentAsync({ type: "application/pdf", multiple: false });
+      if (res.canceled) return;
+      const file = res.assets?.[0];
+      if (file) {
+        setSelectedFile(file);
+        show("File selected: " + file.name, "success");
       }
-      const html = `
-        <html><head><meta name='viewport' content='width=device-width, initial-scale=1.0'></head>
-        <body style='font-family: -apple-system, Roboto, Arial; padding: 24px;'>
-          <h2>${report.title}</h2>
-          <p><b>Patient ID:</b> ${report.patientId}</p>
-          <p><b>Uploaded by:</b> ${report.uploadedByName}</p>
-          <p><b>Date:</b> ${new Date(report.createdAt).toLocaleString()}</p>
-          <hr/>
-          <pre style='white-space: pre-wrap; font-size: 14px;'>${report.content || ""}</pre>
-        </body></html>`;
-      const { uri } = await Print.printToFileAsync({ html });
-      await Sharing.shareAsync(uri);
-    } catch (e) {}
+    } catch (e) {
+      console.error("Error picking PDF:", e);
+      show("Failed to pick PDF: " + e.message, "danger");
+    }
+  };
+
+  const handleUploadPdf = async () => {
+    if (!patientId) {
+      show("Please select a patient", "danger");
+      return;
+    }
+    
+    if (!selectedFile) {
+      show("Please select a file first", "danger");
+      return;
+    }
+    
+    setLoading(true);
+    try {
+      // Using a default doctor ID for demonstration
+      // In a real app, this would come from authentication
+      const doctorId = "68cb7fd9a0b6194b8ede0320";
+      
+      await addPdfReport(patientId, title, selectedFile.uri, selectedFile.name, doctorId);
+      setTitle("");
+      setSelectedFile(null);
+      show("PDF uploaded successfully", "success");
+      
+      // Navigate back to patient detail or patient search
+      if (route?.params?.from === 'PatientDetail') {
+        navigation.goBack();
+      } else {
+        navigation.navigate("PatientSearch");
+      }
+    } catch (error) {
+      console.error("Error in handleUploadPdf:", error);
+      show("Failed to upload PDF: " + (error.response?.data?.message || error.message), "danger");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <ScrollView
-      contentContainerStyle={styles.container}
-      showsVerticalScrollIndicator={false}
-    >
-      {/* Emergency Badge */}
-      {report.isEmergency && (
-        <View style={styles.emergencyBadge}>
-          <Text style={styles.emergencyText}>🚨 Emergency Report</Text>
+    <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
+      <Text style={styles.heading}>📑 Upload / Update Report</Text>
+      
+      {/* Patient Information Display */}
+      {patient && (
+        <View style={styles.patientInfoCard}>
+          <Text style={styles.patientInfoTitle}>Patient Information</Text>
+          <Text style={styles.patientInfoText}>Name: {patient.name}</Text>
+          <Text style={styles.patientInfoText}>Age: {patient.age}</Text>
+          <Text style={styles.patientInfoText}>Gender: {patient.gender}</Text>
+          <Text style={styles.patientInfoText}>ID: {patient._id}</Text>
+        </View>
+      )}
+      
+      {!patient && (
+        <TextInput
+          style={styles.input}
+          placeholder="Enter Patient ID *"
+          value={patientId}
+          onChangeText={setPatientId}
+        />
+      )}
+
+      <TextInput
+        style={styles.input}
+        placeholder="Report Title (optional)"
+        value={title}
+        onChangeText={setTitle}
+      />
+
+      <TextInput
+        style={[styles.input, { height: 120 }]}
+        placeholder="Enter Report Details"
+        value={reportDetails}
+        onChangeText={setReportDetails}
+        multiline
+      />
+
+      <TouchableOpacity 
+        style={styles.filePickerBtn} 
+        onPress={handlePickPdf}
+      >
+        <MaterialIcons name="attach-file" size={22} color="#fff" />
+        <Text style={styles.btnText}>
+          {selectedFile ? `Selected: ${selectedFile.name}` : " Attach File"}
+        </Text>
+      </TouchableOpacity>
+
+      {selectedFile && (
+        <View style={styles.filePreview}>
+          <MaterialIcons name="description" size={24} color="#28A745" />
+          <Text style={styles.fileName}>{selectedFile.name}</Text>
         </View>
       )}
 
-      <Text style={styles.title}>{report.title}</Text>
-      <Text style={styles.meta}>Patient ID: {report.patientId}</Text>
-      <Text style={styles.meta}>Uploaded by: {report.uploadedByName}</Text>
-      <Text style={styles.meta}>
-        On: {new Date(report.createdAt).toLocaleString()}
-      </Text>
+      <TouchableOpacity 
+        style={[styles.uploadBtn, loading && styles.disabledBtn]} 
+        onPress={handleManualUpload}
+        disabled={loading}
+      >
+        <MaterialIcons name="cloud-upload" size={22} color="#fff" />
+        <Text style={styles.btnText}>
+          {loading ? "Saving..." : " Save Report"}
+        </Text>
+      </TouchableOpacity>
 
-      {report.type === "manual" ? (
-        <View style={styles.contentBox}>
-          <Text style={styles.contentText}>{report.content}</Text>
-        </View>
-      ) : (
-        <TouchableOpacity style={styles.pdfBtn} onPress={openPdf}>
-          <MaterialIcons name="picture-as-pdf" size={20} color="#fff" />
-          <Text style={styles.pdfText}> Open PDF</Text>
+      {selectedFile && (
+        <TouchableOpacity 
+          style={[styles.pdfBtn, loading && styles.disabledBtn]} 
+          onPress={handleUploadPdf}
+          disabled={loading}
+        >
+          <MaterialIcons name="file-upload" size={22} color="#fff" />
+          <Text style={styles.btnText}>
+            {loading ? "Uploading..." : " Upload Attached File"}
+          </Text>
         </TouchableOpacity>
       )}
-
-      {/* Emergency Reports → Show Video Call */}
-      {report.isEmergency && (
-        <TouchableOpacity
-          style={[styles.pdfBtn, { backgroundColor: "#e74c3c" }]}
-          onPress={() =>
-            navigation.navigate("VideoCall", {
-              roomId: `${report.patientId}_${report.id}`,
-            })
-          }
-        >
-          <MaterialIcons name="video-call" size={20} color="#fff" />
-          <Text style={styles.pdfText}> Start Video Call</Text>
-        </TouchableOpacity>
-      )}
-
-      <View style={{ flexDirection: "row", marginTop: 10 }}>
-        <TouchableOpacity
-          style={[styles.pdfBtn, { flex: 1, backgroundColor: "#6C757D" }]}
-          onPress={shareOrGeneratePdf}
-        >
-          <MaterialIcons name="download" size={20} color="#fff" />
-          <Text style={styles.pdfText}> Download</Text>
-        </TouchableOpacity>
-        <View style={{ width: 10 }} />
-        <TouchableOpacity
-          style={[styles.pdfBtn, { flex: 1, backgroundColor: "#2E86C1" }]}
-          onPress={shareOrGeneratePdf}
-        >
-          <MaterialIcons name="share" size={20} color="#fff" />
-          <Text style={styles.pdfText}> Share</Text>
-        </TouchableOpacity>
-      </View>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff", padding: 20 },
-  title: { fontSize: 20, fontWeight: "700", color: "#2E4053", marginBottom: 8 },
-  meta: { color: "#6c757d", marginBottom: 4 },
-  contentBox: {
-    backgroundColor: "#F4F6F7",
+  container: { flex: 1, padding: 20, backgroundColor: "#fff" },
+  heading: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: "#2E86C1",
+    marginBottom: 20,
+  },
+  patientInfoCard: {
+    backgroundColor: "#e8f1f9",
     padding: 16,
     borderRadius: 12,
-    marginTop: 12,
+    marginBottom: 20,
+    borderLeftWidth: 4,
+    borderLeftColor: "#2E86C1",
   },
-  contentText: { color: "#212529", fontSize: 16, lineHeight: 22 },
-  pdfBtn: {
+  patientInfoTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#2E86C1",
+    marginBottom: 10,
+  },
+  patientInfoText: {
+    fontSize: 16,
+    color: "#2E4053",
+    marginBottom: 4,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 20,
+  },
+  filePickerBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#6c757d",
+    padding: 14,
+    borderRadius: 10,
+    justifyContent: "center",
+    marginBottom: 12,
+  },
+  uploadBtn: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#2E86C1",
@@ -438,12 +560,38 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginTop: 16,
   },
-  pdfText: { color: "#fff", fontWeight: "600" },
-  emergencyBadge: {
-    backgroundColor: "#dc3545",
-    padding: 10,
-    borderRadius: 8,
-    marginBottom: 10,
+  disabledBtn: {
+    backgroundColor: "#a5d6a7",
   },
-  emergencyText: { color: "#fff", fontWeight: "700" },
+  btnText: { color: "#fff", fontSize: 16, fontWeight: "600" },
+  filePreview: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#f8f9fa",
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: "#dee2e6",
+  },
+  fileName: {
+    marginLeft: 8,
+    fontSize: 14,
+    color: "#495057",
+    flex: 1,
+  },
+  card: {
+    backgroundColor: "#F4F6F7",
+    padding: 15,
+    borderRadius: 10,
+    marginBottom: 15,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 5,
+    elevation: 2,
+  },
+  cardTitle: { fontSize: 16, fontWeight: "bold", color: "#2E4053" },
+  cardText: { fontSize: 14, color: "#5D6D7E", marginVertical: 5 },
+  cardDate: { fontSize: 12, color: "#839192" },
 });
