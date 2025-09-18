@@ -243,7 +243,11 @@ export default function ReportDetail({ route }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff", padding: 20 },
+  container: { 
+    flexGrow: 1, 
+    backgroundColor: "#fff", 
+    padding: 20 
+  },
   title: { fontSize: 20, fontWeight: "700", color: "#2E4053", marginBottom: 8 },
   sectionTitle: { fontSize: 16, fontWeight: "700", color: "#2E4053", marginTop: 16, marginBottom: 8 },
   meta: { color: "#6c757d", marginBottom: 4 },

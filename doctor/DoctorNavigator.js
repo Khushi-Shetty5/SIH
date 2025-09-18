@@ -337,6 +337,7 @@ import EmergencyScreen from "./EmergencyScreen";
 import AddEmergency from "./AddEmergency";
 import TestEmergency from "./TestEmergency";
 import VideoCallScreen from "./VideoCallScreen";
+import VideoCallListScreen from "./VideoCallListScreen";
 
 // Import existing screens
 import { AddPatient } from "./DoctorScreens";
@@ -375,6 +376,7 @@ export default function DoctorNavigator() {
       <Stack.Screen name="PatientReports" component={PatientReportsScreen} options={{ title: "Patient Reports" }} />
       <Stack.Screen name="Medicines" component={Medicines} options={{ title: "Medicines" }} />
       <Stack.Screen name="Calendar" component={Calendar} options={{ title: "Calendar" }} />
+      <Stack.Screen name="VideoCallList" component={VideoCallListScreen} options={{ title: "Video Consultations" }} />
       <Stack.Screen name="VideoCall" component={VideoCallScreen} options={{ title: "Video Call" }} />
       <Stack.Screen name="DoctorProfile" component={DoctorProfile} options={{ title: "Profile" }} />
     </Stack.Navigator>

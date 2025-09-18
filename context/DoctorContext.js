@@ -4,7 +4,7 @@ import axios from "axios";
 const DoctorContext = React.createContext(null);
 
 export function DoctorProvider({ children }) {
-  const API_BASE_URL = "http://192.168.1.18:5000";
+  const API_BASE_URL = "http://192.168.1.48:5000";
   const doctorId = "68cb7fd9a0b6194b8ede0320";
   const [doctorData, setDoctorData] = React.useState(null);
   const [emergencies, setEmergencies] = React.useState([]);
@@ -124,7 +124,7 @@ export function DoctorProvider({ children }) {
     console.log("Starting to fetch doctor data...");
     
     // API base URL - change this based on your environment
-    const API_BASE_URL = "http://192.168.1.18:5000";
+    // const API_BASE_URL = "http://192.168.1.48:5000";
     
     // Create a function to process calendar data
     const processCalendarData = (calendarData, patientsList) => {
@@ -294,7 +294,7 @@ export function DoctorProvider({ children }) {
 
   const attendEmergency = async (id, doctorId = "${doctorId}") => {
     try {
-      const API_BASE_URL = "http://192.168.1.18:5000";
+      const API_BASE_URL = "http://192.168.1.48:5000";
       
       console.log('Attending emergency with ID:', id, 'Doctor ID:', doctorId);
       
@@ -354,7 +354,7 @@ export function DoctorProvider({ children }) {
 
   const addEmergencyNote = async (id, note) => {
     try {
-      const API_BASE_URL = "http://192.168.1.18:5000";
+      // const API_BASE_URL = "http://192.168.1.48:5000";
     
     console.log('Adding note to emergency with ID:', id, 'Note:', note);
     
@@ -430,7 +430,7 @@ export function DoctorProvider({ children }) {
 
   const updateEmergency = async (emergencyId, updates) => {
     try {
-      const API_BASE_URL = "http://192.168.1.18:5000";
+      // const API_BASE_URL = "http://192.168.1.48:5000";
       
       console.log('Updating emergency with ID:', emergencyId, 'Updates:', updates);
       
@@ -483,7 +483,7 @@ export function DoctorProvider({ children }) {
 
   const acknowledgeEmergencyAPI = async (emergencyId) => {
     try {
-      const API_BASE_URL = "http://192.168.1.18:5000";
+      // const API_BASE_URL = "http://192.168.1.48:5000";
       
       console.log('Acknowledging emergency with ID:', emergencyId);
       
@@ -538,7 +538,7 @@ export function DoctorProvider({ children }) {
 
   const addReport = async ({ patientId, title, content = "", type = "note", attachments = [] }) => {
     try {
-      const API_BASE_URL = "http://192.168.1.18:5000";
+      // const API_BASE_URL = "http://192.168.1.48:5000";
       
       // Prepare the report data for API
       const reportPayload = {
@@ -672,7 +672,7 @@ export function DoctorProvider({ children }) {
 
   const addPatient = async (patientData) => {
     try {
-      const API_BASE_URL = "http://192.168.1.18:5000";
+      // const API_BASE_URL = "http://192.168.1.48:5000";
       
       // Prepare the patient data for API
       const patientPayload = {
@@ -751,7 +751,7 @@ export function DoctorProvider({ children }) {
 
   const addEmergency = async ({ doctorId, patientId, title, details, priority }) => {
     try {
-      const API_BASE_URL = "http://192.168.1.18:5000";
+      // const API_BASE_URL = "http://192.168.1.48:5000";
       
       // Prepare the emergency data for API
       const emergencyPayload = {
@@ -810,7 +810,7 @@ export function DoctorProvider({ children }) {
 
   const createEmergency = async ({ patientId, title, details, priority }) => {
     try {
-      const API_BASE_URL = "http://192.168.1.18:5000";
+      // const API_BASE_URL = "http://192.168.1.48:5000";
       
       // Prepare the emergency data for API
       const emergencyPayload = {
@@ -968,6 +968,7 @@ export function DoctorProvider({ children }) {
     <DoctorContext.Provider value={value}>{children}</DoctorContext.Provider>
   );
 }
+
 
 export function useDoctor() {
   return React.useContext(DoctorContext);

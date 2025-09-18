@@ -1,229 +1,353 @@
-import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Modal, Alert } from "react-native";
+import React, { useState, useEffect, useRef } from "react";
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Modal, Alert, Linking, Platform } from "react-native";
 import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 import { useDoctor } from "../context/DoctorContext";
 
-export function VideoCallScreen({ navigation }) {
-  const { patients } = useDoctor();
-  const [selectedPatient, setSelectedPatient] = useState(null);
-  const [modalVisible, setModalVisible] = useState(false);
-
-  // Mock data for patient call requests
-  // In a real app, this would come from your backend or context
-  const [callRequests, setCallRequests] = useState([
-    {
-      id: "1",
-      patientId: "p1",
-      name: "Rajesh Kumar",
-      reason: "Follow-up consultation for diabetes management",
-      time: "10:30 AM",
-      avatar: null,
-      gender: "M",
-      status: "pending"
-    },
-    {
-      id: "2",
-      patientId: "p2",
-      name: "Priya Sharma",
-      reason: "Post-surgery checkup for knee replacement",
-      time: "11:15 AM",
-      avatar: null,
-      gender: "F",
-      status: "pending"
-    },
-    {
-      id: "3",
-      patientId: "p3",
-      name: "Amit Patel",
-      reason: "Consultation for persistent cough and fever",
-      time: "2:45 PM",
-      avatar: null,
-      gender: "M",
-      status: "pending"
-    },
-    {
-      id: "4",
-      patientId: "p4",
-      name: "Sneha Reddy",
-      reason: "Medication review and adjustment",
-      time: "4:00 PM",
-      avatar: null,
-      gender: "F",
-      status: "pending"
-    }
-  ]);
-
-  const handlePatientSelect = (patient) => {
-    setSelectedPatient(patient);
-    setModalVisible(true);
+// Daily.co Video Call Component
+const DailyCoVideoCall = ({ roomUrl, onEndCall, onToggleMute, onToggleCamera, isMuted, isCameraOn }) => {
+  // In a real implementation with daily.co, you would use:
+  // 1. @daily-co/react-native-daily-js library
+  // 2. Create a call frame and join the room
+  // 3. Handle participant events, media events, etc.
+  
+  /*
+  import DailyIframe from '@daily-co/react-native-daily-js';
+  
+  const callFrameRef = useRef(null);
+  
+  useEffect(() => {
+    // Initialize Daily.co call frame
+    const initializeCall = async () => {
+      try {
+        callFrameRef.current = DailyIframe.createCallFrame({
+          url: roomUrl,
+          showLeaveButton: false,
+          showFullscreenButton: false,
+        });
+        
+        // Event listeners
+        callFrameRef.current
+          .on('joined-meeting', handleJoinedMeeting)
+          .on('participant-joined', handleParticipantJoined)
+          .on('participant-left', handleParticipantLeft)
+          .on('error', handleError);
+        
+        // Join the room
+        await callFrameRef.current.join({ url: roomUrl });
+      } catch (error) {
+        console.error('Error initializing Daily.co call:', error);
+        Alert.alert('Connection Error', 'Failed to connect to video call');
+      }
+    };
+    
+    initializeCall();
+    
+    // Cleanup
+    return () => {
+      if (callFrameRef.current) {
+        callFrameRef.current.destroy();
+      }
+    };
+  }, [roomUrl]);
+  
+  const handleJoinedMeeting = () => {
+    console.log('Joined meeting successfully');
   };
-
-  const handleStartVideoCall = () => {
-    setModalVisible(false);
-    Alert.alert(
-      "Video Call",
-      `Starting video call with ${selectedPatient?.name}`,
-      [
-        { text: "OK" }
-      ]
-    );
-    // In a real app, you would integrate with a video calling SDK here
+  
+  const handleParticipantJoined = (event) => {
+    console.log('Participant joined:', event);
   };
-
-  const handleStartAudioCall = () => {
-    setModalVisible(false);
-    Alert.alert(
-      "Audio Call",
-      `Starting audio call with ${selectedPatient?.name}`,
-      [
-        { text: "OK" }
-      ]
-    );
-    // In a real app, you would integrate with a calling SDK here
+  
+  const handleParticipantLeft = (event) => {
+    console.log('Participant left:', event);
   };
-
-  const handleScheduleLater = () => {
-    setModalVisible(false);
-    Alert.alert(
-      "Schedule Appointment",
-      `Scheduling appointment for ${selectedPatient?.name}`,
-      [
-        { text: "OK" }
-      ]
-    );
-    // In a real app, you would open a scheduling interface
+  
+  const handleError = (error) => {
+    console.error('Daily.co error:', error);
+    Alert.alert('Call Error', error.message);
   };
-
-  const getAvatarColor = (gender) => {
-    return gender === "M" ? "#E3F2FD" : "#FCE4EC";
-  };
-
-  const getAvatarIconColor = (gender) => {
-    return gender === "M" ? "#2E86C1" : "#E91E63";
-  };
-
+  */
+  
+  // For now, we'll use a placeholder UI that simulates the video call experience with Daily.co
   return (
-    <View style={styles.container}>
-      <ScrollView 
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Header */}
-        <View style={styles.headerContainer}>
-          <View style={styles.headerContent}>
-            <Ionicons name="videocam" size={28} color="#fff" />
-            <View style={styles.headerTextContainer}>
-              <Text style={styles.headerTitle}>Video Consultations</Text>
-              <Text style={styles.headerSubtitle}>{callRequests.length} pending requests</Text>
-            </View>
+    <View style={styles.videoContainer}>
+      {/* Remote Video Stream (Patient's camera) */}
+      <View style={styles.remoteVideo}>
+        <View style={styles.videoPlaceholderContainer}>
+          <Ionicons name="person" size={64} color="#fff" />
+          <Text style={styles.videoPlaceholderText}>Patient's Video</Text>
+          <Text style={styles.dailyCoText}>Daily.co Video Call</Text>
+        </View>
+      </View>
+      
+      {/* Self View (Doctor's camera) */}
+      <View style={styles.selfView}>
+        <View style={styles.selfViewPlaceholder}>
+          <Ionicons name="person" size={32} color="#fff" />
+          <Text style={styles.selfViewText}>You</Text>
+        </View>
+      </View>
+      
+      {/* Call Controls Overlay */}
+      <View style={styles.callControlsOverlay}>
+        <TouchableOpacity style={styles.controlButton} onPress={onToggleMute}>
+          <MaterialIcons name={isMuted ? "mic-off" : "mic"} size={24} color="#fff" />
+        </TouchableOpacity>
+        
+        <TouchableOpacity 
+          style={[styles.controlButton, styles.endCallButton]} 
+          onPress={onEndCall}
+        >
+          <MaterialIcons name="call-end" size={24} color="#fff" />
+        </TouchableOpacity>
+        
+        <TouchableOpacity style={styles.controlButton} onPress={onToggleCamera}>
+          <MaterialIcons name={isCameraOn ? "videocam" : "videocam-off"} size={24} color="#fff" />
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+};
+
+// Video Call Screen Component
+export function VideoCallScreen({ route, navigation }) {
+  const { patient, roomUrl, roomId, roomName } = route.params || {};
+  const { patients, doctorData } = useDoctor(); // Get doctorData from context
+  const [isCallActive, setIsCallActive] = useState(!!roomUrl); // If roomUrl is provided, call is active
+  const [callType, setCallType] = useState(roomUrl ? 'video' : null); // 'video' or 'audio'
+  const [isMuted, setIsMuted] = useState(false);
+  const [isCameraOn, setIsCameraOn] = useState(true);
+  const [dailyRoomUrl, setDailyRoomUrl] = useState(roomUrl || null);
+
+  // Get doctor ID from context (in a real app)
+  const doctorId = doctorData?._id || "68cb7fd9a0b6194b8ede0320"; // Fallback to hardcoded ID
+
+  // Dummy patient data for testing if no patient is provided
+  const dummyPatient = {
+    _id: "dummy123",
+    name: "John Doe",
+    age: 35,
+    gender: "M",
+    phoneNumber: "+1234567890",
+    reason: "Follow-up consultation",
+    birthDate: "1988-05-15"
+  };
+
+  const currentPatient = patient || dummyPatient;
+
+  // Calculate age from birth date if available
+  const calculateAge = (birthDate) => {
+    if (!birthDate) return "N/A";
+    const today = new Date();
+    const birth = new Date(birthDate);
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+      age--;
+    }
+    return age;
+  };
+
+  // Create a Daily.co room (in a real app, this would call your backend API)
+  const createDailyRoom = async () => {
+    try {
+      // In a real implementation, you would call your backend to create a room:
+      const API_BASE_URL = "http://10.188.235.128:5000";
+      
+      const response = await fetch(`${API_BASE_URL}/api/doctors/create-daily-room`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          patientId: currentPatient._id,
+          doctorId: doctorId // Use the doctorId from context
+        })
+      });
+      
+      const data = await response.json();
+      if (data.success && data.roomUrl) {
+        setDailyRoomUrl(data.roomUrl);
+        return data.roomUrl;
+      } else {
+        throw new Error(data.error || 'Failed to create room');
+      }
+    } catch (error) {
+      console.error('Error creating Daily.co room:', error);
+      Alert.alert('Error', error.message || 'Failed to create video call room');
+      return null;
+    }
+  };
+
+  // Handle end call
+  const handleEndCall = () => {
+    setIsCallActive(false);
+    setCallType(null);
+    setDailyRoomUrl(null);
+    Alert.alert("Call Ended", "The call has been disconnected");
+  };
+
+  // Handle mute toggle
+  const handleToggleMute = () => {
+    setIsMuted(!isMuted);
+    Alert.alert("Microphone", isMuted ? "Microphone unmuted" : "Microphone muted");
+  };
+
+  // Handle toggle camera
+  const handleToggleCamera = () => {
+    setIsCameraOn(!isCameraOn);
+    Alert.alert("Camera", isCameraOn ? "Camera turned on" : "Camera turned off");
+  };
+
+  // Start video call with Daily.co
+  const startVideoCall = async () => {
+    // If roomUrl is already provided (from direct navigation), use it
+    console.log("came to call room")
+    if (roomUrl) {
+      setIsCallActive(true);
+      setCallType('video');
+      return;
+    }
+    
+    // Otherwise create a new room
+    const roomUrl = await createDailyRoom();
+    if (roomUrl) {
+      setIsCallActive(true);
+      setCallType('video');
+    }
+  };
+
+  // If we navigated directly with a room URL, start the call immediately
+  useEffect(() => {
+    if (roomUrl && !isCallActive) {
+      setIsCallActive(true);
+      setCallType('video');
+    }
+  }, [roomUrl, isCallActive]);
+
+  if (currentPatient && isCallActive && callType === 'video') {
+    // Daily.co Video Call UI
+    return (
+      <View style={styles.callContainer}>
+        {/* Patient Details Header */}
+        <View style={styles.callHeader}>
+          <View style={styles.patientInfo}>
+            <Text style={styles.patientName}>{currentPatient.name}</Text>
+            <Text style={styles.patientDetailsText}>
+              {calculateAge(currentPatient.birthDate || currentPatient.age)} years, {currentPatient.gender}
+            </Text>
+            <Text style={styles.patientDetailsText}>{currentPatient.reason || "Video Consultation"}</Text>
           </View>
         </View>
 
-        {/* Call Requests List */}
-        <View style={styles.requestsContainer}>
-          {callRequests.length > 0 ? (
-            callRequests.map((request) => (
-              <TouchableOpacity
-                key={request.id}
-                style={styles.requestCard}
-                onPress={() => handlePatientSelect(request)}
-                activeOpacity={0.8}
-              >
-                <View style={styles.patientInfoContainer}>
-                  <View style={[styles.avatarContainer, { backgroundColor: getAvatarColor(request.gender) }]}>
-                    <MaterialIcons 
-                      name={request.gender === "M" ? "man" : "woman"} 
-                      size={28} 
-                      color={getAvatarIconColor(request.gender)} 
-                    />
-                  </View>
-                  <View style={styles.patientDetails}>
-                    <Text style={styles.patientName}>{request.name}</Text>
-                    <Text style={styles.reasonText}>{request.reason}</Text>
-                    <View style={styles.timeContainer}>
-                      <MaterialIcons name="schedule" size={14} color="#8E8E93" />
-                      <Text style={styles.timeText}>{request.time}</Text>
-                    </View>
-                  </View>
-                </View>
-                <MaterialIcons name="chevron-right" size={24} color="#2E86C1" />
-              </TouchableOpacity>
-            ))
-          ) : (
-            <View style={styles.emptyStateContainer}>
-              <Ionicons name="videocam-off" size={64} color="#E0E0E0" />
-              <Text style={styles.emptyStateTitle}>No Call Requests</Text>
-              <Text style={styles.emptyStateSubtitle}>You don't have any pending video call requests at the moment.</Text>
-            </View>
-          )}
-        </View>
-      </ScrollView>
+        {/* Daily.co Video Container */}
+        <DailyCoVideoCall 
+          roomUrl={dailyRoomUrl}
+          onEndCall={handleEndCall}
+          onToggleMute={handleToggleMute}
+          onToggleCamera={handleToggleCamera}
+          isMuted={isMuted}
+          isCameraOn={isCameraOn}
+        />
 
-      {/* Action Modal */}
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Call Options</Text>
-              <TouchableOpacity 
-                onPress={() => setModalVisible(false)}
-                style={styles.closeButton}
-              >
-                <MaterialIcons name="close" size={24} color="#8E8E93" />
-              </TouchableOpacity>
-            </View>
-            
-            {selectedPatient && (
-              <View style={styles.modalContent}>
-                <View style={styles.patientSummary}>
-                  <View style={[styles.modalAvatar, { backgroundColor: getAvatarColor(selectedPatient.gender) }]}>
-                    <MaterialIcons 
-                      name={selectedPatient.gender === "M" ? "man" : "woman"} 
-                      size={32} 
-                      color={getAvatarIconColor(selectedPatient.gender)} 
-                    />
-                  </View>
-                  <View style={styles.patientSummaryText}>
-                    <Text style={styles.modalPatientName}>{selectedPatient.name}</Text>
-                    <Text style={styles.modalReason}>{selectedPatient.reason}</Text>
-                  </View>
-                </View>
-                
-                <View style={styles.modalActions}>
-                  <TouchableOpacity 
-                    style={[styles.actionButton, styles.videoCallButton]}
-                    onPress={handleStartVideoCall}
-                  >
-                    <Ionicons name="videocam" size={24} color="#fff" />
-                    <Text style={styles.actionButtonText}>Video Call</Text>
-                  </TouchableOpacity>
-                  
-                  <TouchableOpacity 
-                    style={[styles.actionButton, styles.audioCallButton]}
-                    onPress={handleStartAudioCall}
-                  >
-                    <MaterialIcons name="call" size={24} color="#fff" />
-                    <Text style={styles.actionButtonText}>Audio Call</Text>
-                  </TouchableOpacity>
-                  
-                  <TouchableOpacity 
-                    style={[styles.actionButton, styles.scheduleButton]}
-                    onPress={handleScheduleLater}
-                  >
-                    <MaterialIcons name="schedule" size={24} color="#2E86C1" />
-                    <Text style={styles.scheduleButtonText}>Schedule for Later</Text>
-                  </TouchableOpacity>
-                </View>
+        {/* Call Status Bar */}
+        <View style={styles.callStatusBar}>
+          <Text style={styles.callStatusText}>Daily.co Video Call - Connected</Text>
+          <View style={styles.callIndicators}>
+            {isMuted && (
+              <View style={styles.indicator}>
+                <MaterialIcons name="mic-off" size={16} color="#fff" />
+              </View>
+            )}
+            {!isCameraOn && (
+              <View style={styles.indicator}>
+                <MaterialIcons name="videocam-off" size={16} color="#fff" />
               </View>
             )}
           </View>
         </View>
-      </Modal>
+      </View>
+    );
+  }
+
+  // Patient Details View (when not in a call)
+  if (currentPatient) {
+    return (
+      <View style={styles.container}>
+        <ScrollView contentContainerStyle={styles.scrollContent}>
+          {/* Patient Card */}
+          <View style={styles.patientCard}>
+            <View style={styles.patientHeader}>
+              <View style={styles.avatarContainer}>
+                <MaterialIcons 
+                  name={currentPatient.gender === "M" ? "man" : "woman"} 
+                  size={32} 
+                  color={currentPatient.gender === "M" ? "#2E86C1" : "#E91E63"} 
+                />
+              </View>
+              <View style={styles.patientInfo}>
+                <Text style={styles.patientName}>{currentPatient.name}</Text>
+                <Text style={styles.patientDetailsText}>
+                  {calculateAge(currentPatient.birthDate || currentPatient.age)} years, {currentPatient.gender}
+                </Text>
+                <Text style={styles.patientDetailsText}>{currentPatient.reason || "Video Consultation"}</Text>
+                {currentPatient.phoneNumber && (
+                  <Text style={styles.patientDetailsText}>📞 {currentPatient.phoneNumber}</Text>
+                )}
+              </View>
+            </View>
+          </View>
+
+          {/* Call Options */}
+          <View style={styles.optionsContainer}>
+            <TouchableOpacity 
+              style={[styles.optionButton, styles.videoCallButton]}
+              onPress={startVideoCall}
+            >
+              <Ionicons name="videocam" size={24} color="#fff" />
+              <Text style={styles.optionButtonText}>Video Call</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={[styles.optionButton, styles.audioCallButton]}
+              onPress={() => {
+                const phoneNumber = currentPatient.phoneNumber || currentPatient.contact;
+                if (phoneNumber) {
+                  // Ensure the phone number is in the correct format for dialing
+                  const formattedNumber = phoneNumber.replace(/\s/g, '');
+                  Linking.openURL(`tel:${formattedNumber}`);
+                } else {
+                  Alert.alert("No Phone Number", "Patient phone number is not available");
+                }
+              }}
+            >
+              <MaterialIcons name="call" size={24} color="#fff" />
+              <Text style={styles.optionButtonText}>Audio Call</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={[styles.optionButton, styles.scheduleButton]}
+              onPress={() => {
+                Alert.alert(
+                  "Schedule Appointment",
+                  "Schedule functionality coming soon. This will be integrated with your calendar system.",
+                  [{ text: "OK" }]
+                );
+              }}
+            >
+              <MaterialIcons name="schedule" size={24} color="#2E86C1" />
+              <Text style={styles.scheduleButtonText}>Schedule Later</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </View>
+    );
+  }
+
+  // If no patient data, show error
+  return (
+    <View style={styles.container}>
+      <Text style={styles.errorText}>No patient data available</Text>
     </View>
   );
 }
@@ -273,8 +397,6 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     padding: 16,
     marginBottom: 12,
-    flexDirection: "row",
-    alignItems: "center",
     elevation: 3,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
@@ -282,14 +404,15 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
   },
   patientInfoContainer: {
-    flex: 1,
     flexDirection: "row",
     alignItems: "center",
+    marginBottom: 16,
   },
   avatarContainer: {
     width: 56,
     height: 56,
     borderRadius: 28,
+    backgroundColor: "#E3F2FD",
     justifyContent: "center",
     alignItems: "center",
     marginRight: 16,
@@ -298,24 +421,39 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   patientName: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "700",
     color: "#2E2E2E",
+    marginBottom: 4,
+  },
+  patientInfoText: {
+    fontSize: 14,
+    color: "#6c757d",
     marginBottom: 4,
   },
   reasonText: {
     fontSize: 14,
     color: "#6c757d",
-    marginBottom: 6,
     lineHeight: 20,
   },
-  timeContainer: {
+  buttonGroup: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  actionButton: {
     flexDirection: "row",
     alignItems: "center",
+    backgroundColor: "#F8F9FA",
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    flex: 0.3,
+    justifyContent: "center",
   },
-  timeText: {
-    fontSize: 13,
-    color: "#8E8E93",
+  actionButtonText: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#2E86C1",
     marginLeft: 4,
   },
   emptyStateContainer: {
@@ -339,20 +477,20 @@ const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.5)",
-    justifyContent: "flex-end",
+    justifyContent: "center",
+    alignItems: "center",
   },
   modalContainer: {
     backgroundColor: "#fff",
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    paddingTop: 20,
-    paddingBottom: 30,
+    borderRadius: 20,
+    padding: 20,
+    width: "80%",
+    maxWidth: 400,
   },
   modalHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: 20,
     marginBottom: 20,
   },
   modalTitle: {
@@ -364,7 +502,7 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   modalContent: {
-    paddingHorizontal: 20,
+    alignItems: "center",
   },
   patientSummary: {
     flexDirection: "row",
@@ -378,6 +516,7 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
+    backgroundColor: "#E3F2FD",
     justifyContent: "center",
     alignItems: "center",
     marginRight: 16,
@@ -391,15 +530,57 @@ const styles = StyleSheet.create({
     color: "#2E2E2E",
     marginBottom: 4,
   },
-  modalReason: {
+  modalPatientInfo: {
     fontSize: 14,
     color: "#6c757d",
-    lineHeight: 20,
   },
-  modalActions: {
-    gap: 12,
+  modalText: {
+    fontSize: 16,
+    color: "#6c757d",
+    textAlign: "center",
+    marginBottom: 20,
+    lineHeight: 24,
   },
-  actionButton: {
+  modalCloseButton: {
+    backgroundColor: "#2E86C1",
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+  },
+  modalCloseButtonText: {
+    color: "#fff",
+    fontWeight: "600",
+    fontSize: 16,
+  },
+  // Video Call Screen Styles
+  callContainer: {
+    flex: 1,
+    backgroundColor: "#000",
+  },
+  callHeader: {
+    backgroundColor: "#2E86C1",
+    padding: 20,
+    paddingTop: 50,
+  },
+  patientCard: {
+    backgroundColor: "#fff",
+    borderRadius: 14,
+    padding: 20,
+    marginBottom: 20,
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
+  },
+  patientHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  optionsContainer: {
+    gap: 16,
+  },
+  optionButton: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
@@ -428,7 +609,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#2E86C1",
   },
-  actionButtonText: {
+  optionButtonText: {
     fontSize: 16,
     fontWeight: "600",
     color: "#fff",
@@ -439,6 +620,97 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#2E86C1",
     marginLeft: 12,
+  },
+  patientDetailsText: {
+    fontSize: 14,
+    color: "rgba(255,255,255,0.9)",
+  },
+  videoContainer: {
+    flex: 1,
+    backgroundColor: "#333",
+    position: "relative",
+  },
+  remoteVideo: {
+    flex: 1,
+    backgroundColor: "#444",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  videoPlaceholderContainer: {
+    alignItems: "center",
+  },
+  videoPlaceholderText: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "600",
+    marginTop: 10,
+  },
+  selfView: {
+    position: "absolute",
+    top: 20,
+    right: 20,
+    width: 100,
+    height: 150,
+    backgroundColor: "#555",
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  selfViewPlaceholder: {
+    alignItems: "center",
+  },
+  selfViewText: {
+    color: "#fff",
+    fontSize: 12,
+    marginTop: 5,
+  },
+  callControlsOverlay: {
+    position: "absolute",
+    bottom: 40,
+    left: 0,
+    right: 0,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 40,
+  },
+  controlButton: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  endCallButton: {
+    backgroundColor: "#f44336",
+  },
+  errorText: {
+    fontSize: 18,
+    color: "#f44336",
+    textAlign: "center",
+    marginTop: 50,
+  },
+  callStatusBar: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.7)",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+  },
+  callStatusText: {
+    color: "#fff",
+    fontWeight: "600",
+  },
+  callIndicators: {
+    flexDirection: "row",
+    gap: 10,
+  },
+  indicator: {
+    backgroundColor: "rgba(255,255,255,0.2)",
+    padding: 5,
+    borderRadius: 10,
   },
 });
 

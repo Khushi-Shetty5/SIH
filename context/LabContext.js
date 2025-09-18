@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useMemo, useState, useCallback, useEffect } from "react";
 import axios from "axios";
 
-const API_BASE_URL = "http://192.168.1.18:5000/api/doctors";
+const API_BASE_URL = "http://192.168.1.48:5000/api/doctors";
 
 const LabContext = createContext(null);
 

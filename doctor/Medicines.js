@@ -8,7 +8,24 @@ export default function Medicines({ navigation }) {
 
   const [searchQuery, setSearchQuery] = React.useState("");
 
-  const filteredMedicines = medicines.filter(medicine => 
+  // Dummy medicine data
+  const dummyMedicines = [
+    { id: "1", name: "Paracetamol 500mg", stock: 150 },
+    { id: "2", name: "Amoxicillin 250mg", stock: 75 },
+    { id: "3", name: "Ibuprofen 200mg", stock: 200 },
+    { id: "4", name: "Aspirin 100mg", stock: 120 },
+    { id: "5", name: "Omeprazole 20mg", stock: 90 },
+    { id: "6", name: "Lisinopril 10mg", stock: 80 },
+    { id: "7", name: "Metformin 500mg", stock: 110 },
+    { id: "8", name: "Atorvastatin 20mg", stock: 65 },
+    { id: "9", name: "Levothyroxine 50mcg", stock: 95 },
+    { id: "10", name: "Amlodipine 5mg", stock: 130 }
+  ];
+
+  // Use dummy data if no medicines from context
+  const medicineList = medicines && medicines.length > 0 ? medicines : dummyMedicines;
+
+  const filteredMedicines = medicineList.filter(medicine => 
     medicine.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
