@@ -326,6 +326,7 @@
 // });
 
 import React from "react";
+import { View, Text, Button } from "react-native";
 import { DoctorProvider } from "../context/DoctorContext";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
@@ -352,7 +353,8 @@ import DoctorProfile from "./DoctorProfile";
 
 const Stack = createNativeStackNavigator();
 
-export default function DoctorNavigator() {
+// Main navigator component
+function DoctorNavigator({ doctorId }) {
   return (
     <Stack.Navigator>
       <Stack.Screen 
@@ -383,11 +385,33 @@ export default function DoctorNavigator() {
   );
 }
 
-// Wrap the navigator with DoctorProvider in a separate component
-export function DoctorApp() {
+// Wrap the navigator with DoctorProvider and pass doctorId
+export function DoctorApp({ route }) {
+  // Extract doctorId from route params
+  const { userData } = route?.params || {};
+  const doctorId = userData?.id || userData?._id;
+  
+  console.log("DoctorApp called with route params:", route?.params);
+  console.log("Extracted userData:", userData);
+  console.log("Extracted doctorId:", doctorId);
+  
+  // Only render the navigator if we have a doctorId
+  if (!doctorId) {
+    console.log("No doctorId provided to DoctorApp");
+    // Even if no doctorId, we should still render something
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <Text>Doctor ID not provided. Please login again.</Text>
+        <Button title="Go to Login" onPress={() => route?.navigation?.navigate('Auth')} />
+      </View>
+    );
+  }
+  
+  console.log("DoctorApp rendering with doctorId:", doctorId);
+  
   return (
-    <DoctorProvider>
-      <DoctorNavigator />
+    <DoctorProvider doctorId={doctorId}>
+      <DoctorNavigator doctorId={doctorId} />
     </DoctorProvider>
   );
 }

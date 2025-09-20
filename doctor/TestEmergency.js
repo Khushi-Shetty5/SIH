@@ -3,8 +3,12 @@ import { View, Text, StyleSheet, TouchableOpacity, Alert } from "react-native";
 import { useDoctor } from "../context/DoctorContext";
 import { MaterialIcons } from "@expo/vector-icons";
 
-export default function TestEmergency({ navigation }) {
+export default function TestEmergency({ navigation, route }) {
   const { addEmergency, patients } = useDoctor();
+  
+  // Get doctorId from route params
+  const { userData } = route?.params || {};
+  const doctorId = userData?.id || userData?._id;
   
   const testAddEmergency = async () => {
     // Check if we have patients to test with
@@ -13,12 +17,18 @@ export default function TestEmergency({ navigation }) {
       return;
     }
     
+    // Check if we have a valid doctorId
+    if (!doctorId) {
+      Alert.alert("Error", "Doctor information not found. Please login again.");
+      return;
+    }
+    
     // Use the first patient for testing
     const patientId = patients[0]._id || patients[0].id;
     
     try {
       const result = await addEmergency({
-        doctorId: "68cb7fd9a0b6194b8ede0320",
+        doctorId: doctorId,
         patientId: patientId,
         title: "Test Emergency Case",
         details: "This is a test emergency case for verification purposes",

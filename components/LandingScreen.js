@@ -12,24 +12,13 @@ function LandingScreen({ navigation }) {
       <View style={styles.optionsContainer}>
         <TouchableOpacity 
           style={[styles.optionCard, styles.doctorCard]} 
-          onPress={() => navigation.navigate('Doctor')}
+          onPress={() => navigation.navigate('Auth')}
         >
           <View style={styles.iconContainer}>
             <Text style={styles.icon}>👨‍⚕️</Text>
           </View>
           <Text style={styles.optionTitle}>Doctor</Text>
           <Text style={styles.optionDescription}>Access patient records, emergency cases, and medical management tools</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={[styles.optionCard, styles.labCard]} 
-          onPress={() => navigation.navigate('Lab')}
-        >
-          <View style={styles.iconContainer}>
-            <Text style={styles.icon}>🧬</Text>
-          </View>
-          <Text style={styles.optionTitle}>Lab Doctor</Text>
-          <Text style={styles.optionDescription}>Manage lab reports, patient data, and test results</Text>
         </TouchableOpacity>
       </View>
       

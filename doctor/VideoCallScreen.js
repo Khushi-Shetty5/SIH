@@ -119,8 +119,9 @@ export function VideoCallScreen({ route, navigation }) {
   const [isCameraOn, setIsCameraOn] = useState(true);
   const [dailyRoomUrl, setDailyRoomUrl] = useState(roomUrl || null);
 
-  // Get doctor ID from context (in a real app)
-  const doctorId = doctorData?._id || "68cb7fd9a0b6194b8ede0320"; // Fallback to hardcoded ID
+  // Get doctorId from route params
+  const { userData } = route?.params || {};
+  const doctorId = userData?.id || userData?._id || doctorData?._id;
 
   // Dummy patient data for testing if no patient is provided
   const dummyPatient = {
@@ -150,6 +151,12 @@ export function VideoCallScreen({ route, navigation }) {
 
   // Create a Daily.co room (in a real app, this would call your backend API)
   const createDailyRoom = async () => {
+    // Check if we have a valid doctorId
+    if (!doctorId) {
+      Alert.alert("Error", "Doctor information not found. Please login again.");
+      return null;
+    }
+    
     try {
       // In a real implementation, you would call your backend to create a room:
       const API_BASE_URL = "http://10.188.235.128:5000";

@@ -1,29 +1,33 @@
 import React, { createContext, useContext, useMemo, useState, useCallback, useEffect } from "react";
 import axios from "axios";
 
-const API_BASE_URL = "http://192.168.1.48:5000/api/doctors";
+const API_BASE_URL = "http://192.168.1.48:5000/api/lab-doctors";
 
 const LabContext = createContext(null);
 
-export function LabProvider({ children }) {
-  const [labWorker, setLabWorker] = useState({
-    id: "68cb7fd9a0b6194b8ede0320", // Using a valid ObjectId format
-    name: "Dr. A. Kumar",
-    email: "a.kumar@labhealth.org",
-    role: "Lab Worker",
-  });
-
+export function LabProvider({ children, labDoctorId }) {
+  const [labWorker, setLabWorker] = useState(null); // Initialize as null instead of static data
   const [patients, setPatients] = useState([]);
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // Set lab worker data dynamically
+  const setLabWorkerData = useCallback((workerData) => {
+    setLabWorker(workerData);
+  }, []);
+
   // Fetch patients from backend
   const fetchPatients = useCallback(async (doctorId) => {
+    if (!doctorId) {
+      console.log("No doctorId provided for fetchPatients");
+      return;
+    }
+    
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get(`${API_BASE_URL}/patients/${doctorId}`);
+      const response = await axios.get(`${API_BASE_URL}/${doctorId}/patients`);
       setPatients(response.data.patients || []);
       
       // Extract reports from patients
@@ -45,12 +49,15 @@ export function LabProvider({ children }) {
 
   // Add patient to backend
   const addPatient = useCallback(async (patientData, doctorId) => {
+    if (!doctorId) {
+      throw new Error("Doctor ID is required to add patient");
+    }
+    
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.post(`${API_BASE_URL}/add-patient`, {
-        ...patientData,
-        doctorId
+      const response = await axios.post(`${API_BASE_URL}/${doctorId}/patients`, {
+        ...patientData
       });
       
       // Add the new patient to the local state
@@ -67,13 +74,16 @@ export function LabProvider({ children }) {
 
   // Upload report to backend
   const uploadReport = useCallback(async (reportData, doctorId) => {
+    if (!doctorId) {
+      throw new Error("Doctor ID is required to upload report");
+    }
+    
     setLoading(true);
     setError(null);
     try {
       console.log("Sending report data to backend:", { ...reportData, doctorId });
-      const response = await axios.post(`${API_BASE_URL}/upload-report`, {
+      const response = await axios.post(`${API_BASE_URL}/${doctorId}/reports`, {
         ...reportData,
-        uploadedBy: labWorker.id, // Now using a valid ObjectId
         uploadedByRole: "LabDoctor"
       });
       
@@ -98,7 +108,7 @@ export function LabProvider({ children }) {
     } finally {
       setLoading(false);
     }
-  }, [labWorker.id, patients]);
+  }, [patients]);
 
   // Add manual report
   const addManualReport = useCallback(async (patientId, title, content, doctorId) => {
@@ -125,16 +135,15 @@ export function LabProvider({ children }) {
   }, [uploadReport]);
 
   const logout = useCallback(() => {
-    setLabWorker((prev) => ({ ...prev, name: "" }));
+    setLabWorker(null);
   }, []);
 
-  // Initial data fetch
+  // Fetch data when labDoctorId changes
   useEffect(() => {
-    // Using a default doctor ID for demonstration
-    // In a real app, this would come from authentication
-    const defaultDoctorId = "68cb7fd9a0b6194b8ede0320";
-    fetchPatients(defaultDoctorId);
-  }, [fetchPatients]);
+    if (labDoctorId) {
+      fetchPatients(labDoctorId);
+    }
+  }, [labDoctorId, fetchPatients]);
 
   const value = useMemo(() => ({
     labWorker,
@@ -144,10 +153,12 @@ export function LabProvider({ children }) {
     error,
     addPatient,
     addManualReport,
-    addPdfReport,    // expose addNotification
+    addPdfReport,
     logout,
-    fetchPatients
-  }), [labWorker, patients, reports, loading, error, addPatient, addManualReport, addPdfReport, logout, fetchPatients]);
+    fetchPatients,
+    setLabWorkerData, // Expose function to set lab worker data
+    labDoctorId // Expose labDoctorId
+  }), [labWorker, patients, reports, loading, error, addPatient, addManualReport, addPdfReport, logout, fetchPatients, setLabWorkerData, labDoctorId]);
 
   return <LabContext.Provider value={value}>{children}</LabContext.Provider>;
 }

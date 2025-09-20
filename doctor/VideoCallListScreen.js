@@ -3,10 +3,14 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Modal, Alert, Lin
 import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 import { useDoctor } from "../context/DoctorContext";
 
-export default function VideoCallListScreen({ navigation }) {
+export default function VideoCallListScreen({ navigation, route }) {
   const { patients, doctorData } = useDoctor();
   const [scheduleModalVisible, setScheduleModalVisible] = useState(false);
   const [selectedPatient, setSelectedPatient] = useState(null);
+
+  // Get doctorId from route params
+  const { userData } = route?.params || {};
+  const doctorId = userData?.id || userData?._id;
 
   // Dummy patient data for testing if no patients are available from context
   const dummyPatients = [
@@ -59,9 +63,15 @@ export default function VideoCallListScreen({ navigation }) {
 
   // Function to directly start video call
   const startVideoCall = async (patient) => {
+    // Check if we have a valid doctorId
+    if (!doctorId) {
+      Alert.alert("Error", "Doctor information not found. Please login again.");
+      return;
+    }
+    
     try {
       // Get doctor ID from context (in a real app)
-      const doctorId = doctorData?._id || "68cb7fd9a0b6194b8ede0320"; // Fallback to hardcoded ID
+      const effectiveDoctorId = doctorData?._id || doctorId;
       
       // Create a Daily.co room (in a real app, this would call your backend API)
 
@@ -73,7 +83,7 @@ export default function VideoCallListScreen({ navigation }) {
         },
         body: JSON.stringify({
           patientId: patient._id,
-          doctorId: doctorId // Use the doctorId from context
+          doctorId: effectiveDoctorId // Use the doctorId from context
         })
       });
       const data = await response.json();

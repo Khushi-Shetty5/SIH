@@ -3,14 +3,33 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert 
 import { MaterialIcons, Ionicons, AntDesign } from "@expo/vector-icons";
 import { useLab } from "../context/LabContext";
 
-export default function Profile({ navigation }) {
-  const { labWorker, patients, reports } = useLab();
+export default function Profile({ navigation, route }) {
+  const { labWorker, patients, reports, setLabWorkerData, fetchPatients } = useLab();
   const [isEditing, setIsEditing] = useState(false);
   const [editedProfile, setEditedProfile] = useState({
     name: "",
     email: "",
     role: ""
   });
+
+  // Extract doctorId from route params
+  const { userData } = route?.params || {};
+  const doctorId = userData?.id || userData?._id;
+
+  // Initialize lab worker data when component mounts
+  useEffect(() => {
+    if (userData) {
+      setLabWorkerData({
+        id: userData.id || userData._id,
+        name: userData.name || "Lab Doctor",
+        email: userData.email || "Not provided",
+        role: userData.role || "Lab Technician"
+      });
+      
+      // Fetch patients for this doctor
+      fetchPatients(userData.id || userData._id);
+    }
+  }, [userData, setLabWorkerData, fetchPatients]);
 
   // Initialize edited profile with current data
   useEffect(() => {

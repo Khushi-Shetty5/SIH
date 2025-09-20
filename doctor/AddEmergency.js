@@ -16,8 +16,9 @@ export default function AddEmergency({ navigation, route }) {
   const [loading, setLoading] = useState(false);
   const [showPatientSelector, setShowPatientSelector] = useState(false);
 
-  // Get doctorId from route params or use default
-  const doctorId = route?.params?.doctorId || "68cb7fd9a0b6194b8ede0320";
+  // Get doctorId from route params
+  const { userData } = route?.params || {};
+  const doctorId = userData?.id || userData?._id;
 
   const handleAddEmergency = async () => {
     // Validation
@@ -28,6 +29,12 @@ export default function AddEmergency({ navigation, route }) {
     
     if (!formData.title.trim()) {
       Alert.alert("Validation Error", "Please enter a title for the emergency");
+      return;
+    }
+    
+    // Check if we have a valid doctorId
+    if (!doctorId) {
+      Alert.alert("Error", "Doctor information not found. Please login again.");
       return;
     }
 
