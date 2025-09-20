@@ -2,6 +2,18 @@
   "name": "try",
   "version": "1.0.0",
   "private": true,
+  "description": "",
+  "homepage": "https://github.com/Khushi-Shetty5/SIH#readme",
+  "bugs": {
+    "url": "https://github.com/Khushi-Shetty5/SIH/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Khushi-Shetty5/SIH.git"
+  },
+  "license": "0BSD",
+  "author": "",
+  "type": "commonjs",
   "main": "index.js",
   "license": "0BSD",
   "scripts": {
