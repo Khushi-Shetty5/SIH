@@ -6,32 +6,64 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+    "plugins": [
+  "expo-dev-client",
+  [
+    "expo-build-properties",
+    {
+      "android": {
+        "gradlePluginVersion": "8.0.2",
+        "kotlinVersion": "1.9.22"
+      },
+      "ios": {
+        "useFrameworks": "static"
+      }
+    }
+  ]
+]
+,
+
+    "cli": {
+      "appVersionSource": "remote"
+    },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app uses the camera for video calls.",
+        "NSMicrophoneUsageDescription": "This app uses the microphone for audio in video calls."
+      },
+      "bundleIdentifier": "com.anonymous.xtry"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "permissions": [
+        "CAMERA",
+        "RECORD_AUDIO",
+        "MODIFY_AUDIO_SETTINGS",
+        "WRITE_EXTERNAL_STORAGE",
+        "INTERNET"
+      ],
+      "package": "com.anonymous.xtry"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "updates": {
-      "enabled": false,
-      "checkAutomatically": "ON_ERROR_RECOVERY",
-      "fallbackToCacheTimeout": 0
-    },
-    "plugins": [
-      "expo-font"
-    ]
+
+    "extra": {
+      "eas": {
+        "projectId": "60e8af83-77f7-44be-aefb-6a9f673afb56"
+      }
+    }
+
   }
 }
