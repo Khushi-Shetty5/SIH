@@ -17,7 +17,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useLanguage } from '../languageConstants';
 import axios from 'axios';
 
-const BACKEND_URL = 'http://192.168.118.168:3000';
+const BACKEND_URL = 'http://192.168.181.168:3000';
 
 const SignupScreen = ({ navigation }) => {
   const { translations, language, changeLanguage, ttsEnabled, setTtsEnabled } = useLanguage();

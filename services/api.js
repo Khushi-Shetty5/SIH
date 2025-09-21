@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const PATIENT_BASE_URL = 'http://192.168.118.168:3000';
+const PATIENT_BASE_URL = 'http://192.168.181.168:3000';
 const DAILY_API_KEY = '6704f46560dc7b8bf06b41a09508dc3ca643a941d375db63a372c6d820579cd5';
 
 export const fetchDoctors = async () => {

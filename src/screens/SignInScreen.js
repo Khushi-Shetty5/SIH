@@ -5,7 +5,7 @@ import * as Speech from 'expo-speech';
 import { Ionicons } from '@expo/vector-icons';
 import { useLanguage } from '../languageConstants';
 
-const BACKEND_URL = 'http://192.168.118.168:3000';
+const BACKEND_URL = 'http://192.168.181.168:3000';
 
 const SignInScreen = ({ navigation }) => {
   const { translations, language, ttsEnabled, setTtsEnabled } = useLanguage();
