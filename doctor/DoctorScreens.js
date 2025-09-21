@@ -16,8 +16,6 @@ import EmergencyScreen from "./emergencies";
 export { Calendar, EmergencyScreen };
 
 
-
-
 export function PatientList({ navigation }) {
   const [q, setQ] = React.useState("");
   const [sortBy, setSortBy] = React.useState('name'); // name, age, lastVisit

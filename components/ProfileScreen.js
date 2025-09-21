@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert } from "react-native";
 import { MaterialIcons, Ionicons, AntDesign } from "@expo/vector-icons";
-import { useLab } from "../context/LabContext";
 
-export default function Profile({ navigation, route }) {
-  const { labWorker, patients, reports, setLabWorkerData, fetchPatients } = useLab();
+export default function ProfileScreen({ navigation, route }) {
+  // Get user data from route parameters
+  const { userData } = route.params || {};
+  
   const [isEditing, setIsEditing] = useState(false);
   const [editedProfile, setEditedProfile] = useState({
     name: "",
@@ -12,35 +13,16 @@ export default function Profile({ navigation, route }) {
     role: ""
   });
 
-  // Extract doctorId from route params
-  const { userData } = route?.params || {};
-  const doctorId = userData?.id || userData?._id;
-
-  // Initialize lab worker data when component mounts
-  useEffect(() => {
-    if (userData) {
-      setLabWorkerData({
-        id: userData.id || userData._id,
-        name: userData.name || "Lab Doctor",
-        email: userData.email || "Not provided",
-        role: userData.role || "Lab Technician"
-      });
-      
-      // Fetch patients for this doctor
-      fetchPatients(userData.id || userData._id);
-    }
-  }, [userData, setLabWorkerData, fetchPatients]);
-
   // Initialize edited profile with current data
   useEffect(() => {
-    if (labWorker) {
+    if (userData) {
       setEditedProfile({
-        name: labWorker.name || "",
-        email: labWorker.email || "",
-        role: labWorker.role || ""
+        name: userData.name || "",
+        email: userData.email || "",
+        role: userData.role || ""
       });
     }
-  }, [labWorker]);
+  }, [userData]);
 
   const handleSave = () => {
     // In a real app, this would make an API call to update the profile
@@ -64,7 +46,7 @@ export default function Profile({ navigation, route }) {
     </View>
   );
 
-  if (!labWorker) {
+  if (!userData) {
     return (
       <View style={styles.loadingContainer}>
         <MaterialIcons name="hourglass-empty" size={48} color="#6c757d" />
@@ -72,6 +54,22 @@ export default function Profile({ navigation, route }) {
       </View>
     );
   }
+
+  // Role-specific display names
+  const getRoleDisplayName = (role) => {
+    switch (role) {
+      case 'admin':
+        return 'Administrator';
+      case 'receptionist':
+        return 'Receptionist';
+      case 'doctor':
+        return 'Doctor';
+      case 'lab':
+        return 'Lab Doctor';
+      default:
+        return role;
+    }
+  };
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -112,9 +110,9 @@ export default function Profile({ navigation, route }) {
           </>
         ) : (
           <>
-            <Text style={styles.name}>{labWorker.name || "Lab Doctor"}</Text>
-            <Text style={styles.role}>{labWorker.role || "Lab Technician"}</Text>
-            <Text style={styles.email}>{labWorker.email || "Not provided"}</Text>
+            <Text style={styles.name}>{userData.name || "User"}</Text>
+            <Text style={styles.role}>{getRoleDisplayName(userData.role) || "Staff Member"}</Text>
+            <Text style={styles.email}>{userData.email || "Not provided"}</Text>
             <TouchableOpacity style={styles.editProfileButton} onPress={() => setIsEditing(true)}>
               <MaterialIcons name="edit" size={16} color="#2E86C1" />
               <Text style={styles.editProfileText}>Edit Profile</Text>
@@ -125,15 +123,15 @@ export default function Profile({ navigation, route }) {
 
       <View style={styles.statsContainer}>
         <StatCard 
-          title="Total Patients" 
-          value={patients?.length || 0} 
-          icon={<Ionicons name="people" size={24} color="#2E86C1" />} 
+          title="User ID" 
+          value={userData.id ? userData.id.slice(-8) : "Not available"} 
+          icon={<Ionicons name="person" size={24} color="#2E86C1" />} 
           color="#2E86C1" 
         />
         <StatCard 
-          title="Reports Generated" 
-          value={reports?.length || 0} 
-          icon={<MaterialIcons name="assignment" size={24} color="#28A745" />} 
+          title="Role" 
+          value={getRoleDisplayName(userData.role) || "Not specified"} 
+          icon={<MaterialIcons name="work" size={24} color="#28A745" />} 
           color="#28A745" 
         />
       </View>
@@ -146,20 +144,28 @@ export default function Profile({ navigation, route }) {
         <View style={styles.infoCard}>
           <View style={styles.infoRow}>
             <MaterialIcons name="badge" size={20} color="#6c757d" />
-            <Text style={styles.infoLabel}>Doctor ID</Text>
-            <Text style={styles.infoValue}>{labWorker.id || "Not available"}</Text>
+            <Text style={styles.infoLabel}>User ID</Text>
+            <Text style={styles.infoValue}>{userData.id || "Not available"}</Text>
           </View>
           
           <View style={styles.infoRow}>
             <MaterialIcons name="work" size={20} color="#6c757d" />
-            <Text style={styles.infoLabel}>Specialization</Text>
-            <Text style={styles.infoValue}>{labWorker.role || "Lab Doctor"}</Text>
+            <Text style={styles.infoLabel}>Role</Text>
+            <Text style={styles.infoValue}>{getRoleDisplayName(userData.role) || "Not specified"}</Text>
           </View>
           
           <View style={styles.infoRow}>
             <MaterialIcons name="email" size={20} color="#6c757d" />
             <Text style={styles.infoLabel}>Email</Text>
-            <Text style={styles.infoValue}>{labWorker.email || "Not provided"}</Text>
+            <Text style={styles.infoValue}>{userData.email || "Not provided"}</Text>
+          </View>
+          
+          <View style={styles.infoRow}>
+            <MaterialIcons name="access-time" size={20} color="#6c757d" />
+            <Text style={styles.infoLabel}>Member Since</Text>
+            <Text style={styles.infoValue}>
+              {userData.createdAt ? new Date(userData.createdAt).toLocaleDateString() : "Not available"}
+            </Text>
           </View>
         </View>
       </View>
@@ -181,9 +187,9 @@ export default function Profile({ navigation, route }) {
           <MaterialIcons name="chevron-right" size={20} color="#6c757d" />
         </TouchableOpacity>
         
-        <TouchableOpacity style={styles.menuItem}>
-          <MaterialIcons name="info-outline" size={20} color="#2E86C1" />
-          <Text style={styles.menuText}>About</Text>
+        <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('Login')}>
+          <MaterialIcons name="logout" size={20} color="#e74c3c" />
+          <Text style={[styles.menuText, { color: '#e74c3c' }]}>Logout</Text>
           <MaterialIcons name="chevron-right" size={20} color="#6c757d" />
         </TouchableOpacity>
       </View>

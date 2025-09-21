@@ -3,9 +3,9 @@ import axios from "axios";
 
 const DoctorContext = React.createContext(null);
 
-export function DoctorProvider({ children }) {
+export function DoctorProvider({ children, doctorId }) {
   const API_BASE_URL = "http://192.168.1.48:5000";
-  const doctorId = "68cb7fd9a0b6194b8ede0320";
+  // Remove the static doctorId and use the one passed as prop
   const [doctorData, setDoctorData] = React.useState(null);
   const [emergencies, setEmergencies] = React.useState([]);
   const [patients, setPatients] = React.useState([]);
@@ -18,6 +18,12 @@ export function DoctorProvider({ children }) {
 
   // Function to update calendar slot in backend
   const upsertCalendarSlot = async ({ date, time, status, patientId, patientName, patientAge, patientGender, patientContact }) => {
+    // Check if we have a valid doctorId
+    if (!doctorId) {
+      console.log("No doctorId provided for upsertCalendarSlot");
+      return { success: false, error: "Doctor ID is required" };
+    }
+    
     try {
       console.log('Updating calendar slot:', { date, time, status, patientId });
       
@@ -107,6 +113,12 @@ export function DoctorProvider({ children }) {
 
   // Function to fetch calendar data separately
   const fetchCalendarData = async () => {
+    // Check if we have a valid doctorId
+    if (!doctorId) {
+      console.log("No doctorId provided for fetchCalendarData");
+      return [];
+    }
+    
     try {
       const response = await axios.get(
         `${API_BASE_URL}/api/doctors/${doctorId}/calendar`
@@ -121,10 +133,13 @@ export function DoctorProvider({ children }) {
   };
 
   React.useEffect(() => {
-    console.log("Starting to fetch doctor data...");
+    // Only fetch data if doctorId is provided
+    if (!doctorId) {
+      console.log("No doctorId provided, skipping data fetch");
+      return;
+    }
     
-    // API base URL - change this based on your environment
-    // const API_BASE_URL = "http://192.168.1.48:5000";
+    console.log("Starting to fetch doctor data for doctorId:", doctorId);
     
     // Create a function to process calendar data
     const processCalendarData = (calendarData, patientsList) => {
@@ -290,18 +305,24 @@ export function DoctorProvider({ children }) {
     if (patients && patients.length > 0) {
       fetchCalendarWithPatients();
     }
-  }, []); // Empty dependency array means this runs once on mount
+  }, [doctorId]); // Dependency on doctorId means this runs when doctorId changes
 
-  const attendEmergency = async (id, doctorId = "${doctorId}") => {
+  const attendEmergency = async (id, doctorIdParam = doctorId) => {
+    // Check if we have a valid doctorId
+    if (!doctorIdParam) {
+      console.log("No doctorId provided for attendEmergency");
+      return { success: false, error: "Doctor ID is required" };
+    }
+    
     try {
       const API_BASE_URL = "http://192.168.1.48:5000";
       
-      console.log('Attending emergency with ID:', id, 'Doctor ID:', doctorId);
+      console.log('Attending emergency with ID:', id, 'Doctor ID:', doctorIdParam);
       
       // Send PUT request to attend emergency
       const response = await axios.put(
-        `${API_BASE_URL}/api/doctors/${doctorId}/emergency/${id}`,
-        { attendingBy: doctorId, acknowledged: true },
+        `${API_BASE_URL}/api/doctors/${doctorIdParam}/emergency/${id}`,
+        { attendingBy: doctorIdParam, acknowledged: true },
         {
           headers: {
             'Content-Type': 'application/json',
@@ -429,6 +450,12 @@ export function DoctorProvider({ children }) {
 
 
   const updateEmergency = async (emergencyId, updates) => {
+    // Check if we have a valid doctorId
+    if (!doctorId) {
+      console.log("No doctorId provided for updateEmergency");
+      return { success: false, error: "Doctor ID is required" };
+    }
+    
     try {
       // const API_BASE_URL = "http://192.168.1.48:5000";
       
@@ -482,6 +509,12 @@ export function DoctorProvider({ children }) {
   };
 
   const acknowledgeEmergencyAPI = async (emergencyId) => {
+    // Check if we have a valid doctorId
+    if (!doctorId) {
+      console.log("No doctorId provided for acknowledgeEmergencyAPI");
+      return { success: false, error: "Doctor ID is required" };
+    }
+    
     try {
       // const API_BASE_URL = "http://192.168.1.48:5000";
       
@@ -537,6 +570,12 @@ export function DoctorProvider({ children }) {
   };
 
   const addReport = async ({ patientId, title, content = "", type = "note", attachments = [] }) => {
+    // Check if we have a valid doctorId
+    if (!doctorId) {
+      console.log("No doctorId provided for addReport");
+      return { success: false, error: "Doctor ID is required" };
+    }
+    
     try {
       // const API_BASE_URL = "http://192.168.1.48:5000";
       
@@ -671,6 +710,12 @@ export function DoctorProvider({ children }) {
   };
 
   const addPatient = async (patientData) => {
+    // Check if we have a valid doctorId
+    if (!doctorId) {
+      console.log("No doctorId provided for addPatient");
+      return { success: false, error: "Doctor ID is required" };
+    }
+    
     try {
       // const API_BASE_URL = "http://192.168.1.48:5000";
       
@@ -749,7 +794,16 @@ export function DoctorProvider({ children }) {
     }));
   };
 
-  const addEmergency = async ({ doctorId, patientId, title, details, priority }) => {
+  const addEmergency = async ({ doctorIdParam, patientId, title, details, priority }) => {
+    // Use the provided doctorIdParam or fallback to the context's doctorId
+    const effectiveDoctorId = doctorIdParam || doctorId;
+    
+    // Check if we have a valid doctorId
+    if (!effectiveDoctorId) {
+      console.log("No doctorId provided for addEmergency");
+      return { success: false, error: "Doctor ID is required" };
+    }
+    
     try {
       // const API_BASE_URL = "http://192.168.1.48:5000";
       
@@ -765,7 +819,7 @@ export function DoctorProvider({ children }) {
       
       // Send POST request to add emergency
       const response = await axios.post(
-        `${API_BASE_URL}/api/doctors/${doctorId}/emergencies`,
+        `${API_BASE_URL}/api/doctors/${effectiveDoctorId}/emergencies`,
         emergencyPayload,
         {
           headers: {
@@ -809,6 +863,12 @@ export function DoctorProvider({ children }) {
   };
 
   const createEmergency = async ({ patientId, title, details, priority }) => {
+    // Check if we have a valid doctorId
+    if (!doctorId) {
+      console.log("No doctorId provided for createEmergency");
+      return { success: false, error: "Doctor ID is required" };
+    }
+    
     try {
       // const API_BASE_URL = "http://192.168.1.48:5000";
       
@@ -947,29 +1007,29 @@ export function DoctorProvider({ children }) {
     completeAppointment,
     addPatient,
     updatePatientTreatment,
-    addEmergency, // Add the new function to the context value
+    addEmergency,
     updateEmergency,
-    acknowledgeEmergencyAPI,
     upsertCalendarSlot,
-    fetchCalendarData, // Add the new function to fetch calendar data
-    
-    // Notification functions
+    fetchCalendarData,
     addNotification,
     markNotificationAsRead,
     clearNotifications,
-    
-    // Video call functions
     addVideoCall,
     attendVideoCall,
-    completeVideoCall
+    completeVideoCall,
   };
 
   return (
-    <DoctorContext.Provider value={value}>{children}</DoctorContext.Provider>
+    <DoctorContext.Provider value={value}>
+      {children}
+    </DoctorContext.Provider>
   );
 }
 
-
 export function useDoctor() {
-  return React.useContext(DoctorContext);
+  const context = React.useContext(DoctorContext);
+  if (!context) {
+    throw new Error("useDoctor must be used within a DoctorProvider");
+  }
+  return context;
 }

@@ -4,17 +4,27 @@ import { AntDesign } from "@expo/vector-icons";
 import { useLab } from "../context/LabContext";
 import { useToast } from "../context/ToastContext";
 
-export default function AddPatient({ navigation }) {
+export default function AddPatient({ navigation, route }) {
   const { addPatient } = useLab();
   const { show } = useToast();
   const [form, setForm] = useState({ id: "", name: "", age: "", gender: "", contact: "" });
   const [loading, setLoading] = useState(false);
+
+  // Extract doctorId from route params
+  const { userData } = route?.params || {};
+  const doctorId = userData?.id || userData?._id;
 
   const onChange = (key, value) => setForm((f) => ({ ...f, [key]: value }));
 
   const onSave = async () => {
     if (!form.name || !form.age) {
       show("Please fill required fields (Name and Age)", "danger");
+      return;
+    }
+    
+    // Check if we have a valid doctorId
+    if (!doctorId) {
+      show("Doctor information not found. Please login again.", "danger");
       return;
     }
     
@@ -26,10 +36,6 @@ export default function AddPatient({ navigation }) {
     
     setLoading(true);
     try {
-      // Using a default doctor ID for demonstration
-      // In a real app, this would come from authentication
-      const doctorId = "68cb7fd9a0b6194b8ede0320";
-      
       const patientData = {
         name: form.name.trim(),
         age: ageNum,

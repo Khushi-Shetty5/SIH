@@ -326,6 +326,10 @@ export default function UploadReport({ route, navigation }) {
   const [selectedFile, setSelectedFile] = useState(null);
   const [patient, setPatient] = useState(null);
 
+  // Extract doctorId from route params
+  const { userData } = route?.params || {};
+  const doctorId = userData?.id || userData?._id;
+
   useEffect(() => {
     if (route?.params?.patientId) {
       const patientIdFromParams = route.params.patientId;
@@ -343,6 +347,12 @@ export default function UploadReport({ route, navigation }) {
       return;
     }
     
+    // Check if we have a valid doctorId
+    if (!doctorId) {
+      show("Doctor information not found. Please login again.", "danger");
+      return;
+    }
+    
     if (!reportDetails && !selectedFile) {
       show("Please enter report details or attach a file", "danger");
       return;
@@ -350,10 +360,6 @@ export default function UploadReport({ route, navigation }) {
     
     setLoading(true);
     try {
-      // Using a default doctor ID for demonstration
-      // In a real app, this would come from authentication
-      const doctorId = "68cb7fd9a0b6194b8ede0320";
-      
       await addManualReport(patientId, title, reportDetails, doctorId);
       setReportDetails("");
       setTitle("");
@@ -395,6 +401,12 @@ export default function UploadReport({ route, navigation }) {
       return;
     }
     
+    // Check if we have a valid doctorId
+    if (!doctorId) {
+      show("Doctor information not found. Please login again.", "danger");
+      return;
+    }
+    
     if (!selectedFile) {
       show("Please select a file first", "danger");
       return;
@@ -402,10 +414,6 @@ export default function UploadReport({ route, navigation }) {
     
     setLoading(true);
     try {
-      // Using a default doctor ID for demonstration
-      // In a real app, this would come from authentication
-      const doctorId = "68cb7fd9a0b6194b8ede0320";
-      
       await addPdfReport(patientId, title, selectedFile.uri, selectedFile.name, doctorId);
       setTitle("");
       setSelectedFile(null);
