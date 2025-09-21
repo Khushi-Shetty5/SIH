@@ -1,7 +1,36 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 
-function LandingScreen({ navigation }) {
+function LandingScreen({ navigation, onLogin }) {
+  
+  // Option 1: If this is meant to be the initial landing page that leads to authentication
+  const handleDoctorPress = () => {
+    // Navigate to Auth screen for login, not directly to Doctor
+    navigation.navigate('Auth');
+  };
+
+  const handleLabPress = () => {
+    // Navigate to Auth screen for login
+    navigation.navigate('Auth');
+  };
+
+  // Option 2: If this is meant to be a role selector AFTER login
+  // Uncomment this version if users should select role after already being authenticated
+  /*
+  const handleDoctorPress = () => {
+    // Set some role context or pass role info, then trigger login completion
+    if (onLogin) {
+      onLogin('doctor'); // Pass role to parent
+    }
+  };
+
+  const handleLabPress = () => {
+    if (onLogin) {
+      onLogin('lab'); // Pass role to parent
+    }
+  };
+  */
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -12,7 +41,7 @@ function LandingScreen({ navigation }) {
       <View style={styles.optionsContainer}>
         <TouchableOpacity 
           style={[styles.optionCard, styles.doctorCard]} 
-          onPress={() => navigation.navigate('Doctor')}
+          onPress={handleDoctorPress} // ✅ Fixed: No direct navigation to 'Doctor'
         >
           <View style={styles.iconContainer}>
             <Text style={styles.icon}>👨‍⚕️</Text>
@@ -23,7 +52,7 @@ function LandingScreen({ navigation }) {
         
         <TouchableOpacity 
           style={[styles.optionCard, styles.labCard]} 
-          onPress={() => navigation.navigate('Lab')}
+          onPress={handleLabPress} // ✅ Fixed: Proper navigation flow
         >
           <View style={styles.iconContainer}>
             <Text style={styles.icon}>🧬</Text>
