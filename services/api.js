@@ -3,7 +3,15 @@ import axios from 'axios';
 const PATIENT_BASE_URL = 'http://192.168.181.168:3000';
 const DAILY_API_KEY = '6704f46560dc7b8bf06b41a09508dc3ca643a941d375db63a372c6d820579cd5';
 
+import { getUser } from './storage';
+
+// --- Actual backend logic (commented out for now) ---
 export const fetchDoctors = async () => {
+  // Uncomment below for actual backend call
+  // const response = await axios.get(`${PATIENT_BASE_URL}/api/doctors`);
+  // return response.data;
+
+  // Mock response for development/testing
   return Promise.resolve([
     { id: 1, name: "Dr. Sarah Johnson" },
     { id: 2, name: "Dr. Michael Chen" }
@@ -11,108 +19,79 @@ export const fetchDoctors = async () => {
 };
 
 export const fetchSlots = async (doctorId, date) => {
+  // Uncomment below for actual backend call
+  // const response = await axios.get(`${PATIENT_BASE_URL}/api/appointments/slots`, {
+  //   params: { doctorId, date }
+  // });
+  // return response.data;
+
+  // Mock response for development/testing
   return Promise.resolve(["9:00 AM", "10:00 AM", "2:00 PM"]);
 };
 
-export const bookAppointment = async (appointmentData) => {
-  try {
-    const formattedData = {
-      ...appointmentData,
-      date: new Date(appointmentData.date).toISOString(), // Convert date to ISO string
-      appointmentType: appointmentData.appointmentType || 'general', // Default to 'general'
-    };
-    
-    console.log('📅 Booking appointment with data:', formattedData);
-    
-    const response = await axios.post(`${PATIENT_BASE_URL}/auth/book-appointment`, formattedData);
-    console.log('📅 Book appointment response:', response.data);
-    
-    const { appointment } = response.data;
-    
-    // If video consultation, try to create video room immediately
-    if (appointment.appointmentType === 'video' && appointment.status === 'pending') {
-      try {
-        console.log('🎥 Creating video room for new appointment:', appointment._id);
-        const roomUrl = await createVideoRoom(appointment._id, appointmentData.patientId, appointmentData.doctorId);
-        console.log('🎥 Video room created successfully:', roomUrl);
-        
-        // Update appointment with video room URL
-        const updateResponse = await axios.put(`${PATIENT_BASE_URL}/auth/appointments/${appointment._id}/update-video-room`, {
-          videoRoomUrl: roomUrl,
-          patientId: appointmentData.patientId,
-          doctorId: appointmentData.doctorId,
-        });
-        
-        console.log('🎥 Video room URL updated in appointment:', updateResponse.data);
-        appointment.videoRoomUrl = roomUrl;
-      } catch (videoError) {
-        console.error('❌ Failed to create video room after booking:', videoError.response?.data || videoError.message);
-        // Don't fail the booking if video room creation fails
-      }
-    }
-    
-    return appointment;
-  } catch (error) {
-    console.error('❌ Error booking appointment:', error.response?.data || error.message);
-    throw error;
+
+export const bookAppointment = async (appointmentData, idempotencyKey) => {
+  let user = await getUser();
+  const patientId = user?.id || 'dummy_patient_id'; // fallback dummy id for testing
+
+  const dataWithPatient = { ...appointmentData, patientId };
+
+  // Uncomment below for real backend call
+  /*
+  const headers = { 'Content-Type': 'application/json' };
+  if (idempotencyKey) {
+    headers['Idempotency-Key'] = idempotencyKey;
   }
+  const response = await axios.post(
+    `${PATIENT_BASE_URL}/api/appointments/booking`,
+    dataWithPatient,
+    { headers }
+  );
+  return response.data;
+  */
+
+  // Mock response for testing
+  return Promise.resolve({ success: true, appointment: { id: "mock_123", status: "pending", ...dataWithPatient } });
 };
 
-export const getPatientAppointments = async (patientId) => {
-  try {
-    if (!patientId) {
-      throw new Error('Patient ID is required');
-    }
-    
-    console.log('📋 Fetching appointments for patientId:', patientId);
-    
-    const response = await axios.get(`${PATIENT_BASE_URL}/auth/appointments`, {
-      params: { patientId }
-    });
-    
-    console.log('📋 Fetched appointments response:', response.data);
-    
-    // Map appointments to ensure consistent frontend structure
-    const appointments = (response.data.appointments || []).map(appt => ({
-      _id: appt._id,
-      patient: appt.patient?._id || patientId, // Fallback to patientId if not populated
-      patientName: appt.patient?.name || 'Unknown', // Use populated patient name
-      doctorId: appt.doctorId,
-      doctorName: appt.doctorName || appt.doctorId || 'Unknown', // Fallback
-      date: new Date(appt.date).toLocaleDateString('en-GB', {
-        weekday: 'short',
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric'
-      }),
-      dateISO: new Date(appt.date).toISOString(), // Keep ISO for sorting
-      time: appt.time,
-      reason: appt.reason,
-      appointmentType: appt.appointmentType || 'general',
-      status: appt.status || 'pending',
-      bookingMode: appt.bookingMode || 'online',
-      videoRoomUrl: appt.videoRoomUrl || null,
-      createdAt: appt.createdAt,
-      isVideoReady: !!(appt.videoRoomUrl && appt.status === 'confirmed'),
-      timeFormatted: formatTime(appt.time),
-    }));
-    
-    // Sort by date and time
-    appointments.sort((a, b) => {
-      const dateA = new Date(a.dateISO);
-      const dateB = new Date(b.dateISO);
-      if (dateA < dateB) return -1;
-      if (dateA > dateB) return 1;
-      return compareTime(a.time, b.time);
-    });
-    
-    console.log('📋 Processed appointments:', appointments.length);
-    return appointments;
-  } catch (error) {
-    console.error('❌ Error fetching patient appointments:', error.response?.data || error.message);
-    throw error;
-  }
+// export const sendOfflineAppointment = async (appointmentData) => {
+//   const response = await axios.post(
+//     `${PATIENT_BASE_URL}/api/appointments/offline`,
+//     appointmentData
+//   );
+//   return response.data;
+// };
+
+export const sendOfflineAppointment = async (appointmentData) => {
+  return Promise.resolve({ success: true, appointment: { id: "offline_123", status: "pending_offline", ...appointmentData } });
 };
+
+// export const getPatientAppointments = async () => {
+//   const response = await axios.get(`${PATIENT_BASE_URL}/api/appointments/patient`);
+//   return response.data;
+// };
+
+export const getPatientAppointments = async () => {
+  return Promise.resolve([
+    {
+      id: 'a1',
+      doctorName: 'Dr. Sarah Johnson',
+      date: '2025-09-20',
+      time: '10:00 AM',
+      reason: 'General Checkup',
+      status: 'pending',
+    },
+    {
+      id: 'a2',
+      doctorName: 'Dr. Michael Chen',
+      date: '2025-09-22',
+      time: '02:30 PM',
+      reason: 'Cardiology Follow-up',
+      status: 'approved',
+    }
+  ]);
+};
+
 
 // Create or get existing video room for appointment
 export const createVideoRoom = async (appointmentId, patientId, doctorId) => {

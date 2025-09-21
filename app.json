@@ -1,41 +1,42 @@
 {
   "expo": {
-    "name": "try",
-    "slug": "try",
+    "name": "healthcare-dashboard",
+    "slug": "healthcare-dashboard",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": false,
+    "newArchEnabled": true,
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
     "plugins": [
-  "expo-dev-client",
-  [
-    "expo-build-properties",
-    {
-      "android": {
-        "gradlePluginVersion": "8.0.2",
-        "kotlinVersion": "1.9.22"
-      },
-      "ios": {
-        "useFrameworks": "static"
-      }
-    }
-  ]
-]
-,
-
+      "expo-asset",
+      "expo-font",
+      "expo-dev-client",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "gradlePluginVersion": "8.0.2",
+            "kotlinVersion": "1.9.22"
+          },
+          "ios": {
+            "useFrameworks": "static"
+          }
+        }
+      ]
+    ],
     "cli": {
       "appVersionSource": "remote"
     },
     "ios": {
       "supportsTablet": true,
+      "jsEngine": "hermes",
       "infoPlist": {
-        "NSCameraUsageDescription": "This app uses the camera for video calls.",
+        "NSCameraUsageDescription": "Camera access is needed for video consultations. This app uses the camera for video calls.",
         "NSMicrophoneUsageDescription": "This app uses the microphone for audio in video calls."
       },
       "bundleIdentifier": "com.anonymous.xtry"
@@ -45,6 +46,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
+      "jsEngine": "hermes",
       "edgeToEdgeEnabled": true,
       "permissions": [
         "CAMERA",
@@ -58,12 +60,10 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-
     "extra": {
       "eas": {
         "projectId": "60e8af83-77f7-44be-aefb-6a9f673afb56"
       }
     }
-
   }
 }

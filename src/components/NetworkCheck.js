@@ -11,14 +11,13 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
-import { useNetwork } from '../components/NetworkProvider.js';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import NetInfo from '@react-native-community/netinfo';
 
-import { fetchDoctors, fetchSlots, bookAppointment } from '../../services/api.js';
-import { sendOfflineSms } from '../../services/sms.js';
-import SpeakButton from '../components/SpeakButton.js';
+import { fetchDoctors, fetchSlots, bookAppointment } from '../../services/api';
+import { sendOfflineSms } from '../../services/sms';
+import SpeakButton from '../components/SpeakButton';
 import FloatingChatButton from '../components/FloatingChatButton.js';
-import { strings } from '../constants/strings.js';
+import { strings } from '../constants/strings';
 
 export default function AppointmentBookingScreen({ route, navigation }) {
   const [doctors, setDoctors] = useState([]);
@@ -29,7 +28,7 @@ export default function AppointmentBookingScreen({ route, navigation }) {
   const [selectedTime, setSelectedTime] = useState('');
   const [timeSlots, setTimeSlots] = useState([]);
   const [reason, setReason] = useState('');
-  const { isConnected } = useNetwork();
+  const [isConnected, setIsConnected] = useState(true);
 
   useEffect(() => {
     fetchDoctors()
@@ -47,7 +46,12 @@ export default function AppointmentBookingScreen({ route, navigation }) {
     }
   }, [selectedDoctor, selectedDate]);
 
-
+  useEffect(() => {
+    const unsubscribe = NetInfo.addEventListener((state) => {
+      setIsConnected(state.isConnected);
+    });
+    return () => unsubscribe();
+  }, []);
 
   const validateFields = () => {
     if (!selectedDoctor || !selectedDate || !selectedTime || !reason) {
@@ -87,10 +91,7 @@ export default function AppointmentBookingScreen({ route, navigation }) {
     <SafeAreaView style={styles.container}>
       <ScrollView>
         <View style={styles.section}>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Text style={styles.sectionTitle}>{strings.selectDoctorText}</Text>
-            <SpeakButton text={strings.selectDoctorText} />
-          </View>
+          <Text style={styles.sectionTitle}>{strings.selectDoctorText}</Text>
           {doctors.length === 0 ? (
             <Text>Loading doctors...</Text>
           ) : (
@@ -127,11 +128,7 @@ export default function AppointmentBookingScreen({ route, navigation }) {
         </View>
 
         <View style={styles.section}>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Text style={styles.sectionTitle}>{strings.selectDateText}</Text>
-            <SpeakButton text={strings.selectDateText} />
-          </View>
-
+          <Text style={styles.sectionTitle}>{strings.selectDateText}</Text>
           <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.datePicker}>
             <Text>{selectedDate || 'Select date'}</Text>
             <Icon name="calendar" size={20} />
@@ -151,11 +148,7 @@ export default function AppointmentBookingScreen({ route, navigation }) {
         </View>
 
         <View style={styles.section}>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Text style={styles.sectionTitle}>{strings.selectTimeText}</Text>
-            <SpeakButton text={strings.selectTimeText} />
-          </View>
-
+          <Text style={styles.sectionTitle}>{strings.selectTimeText}</Text>
           <View style={styles.timeSlotsContainer}>
             {timeSlots.length === 0 ? (
               <Text style={{ color: '#888' }}>Please select doctor and date</Text>
@@ -179,10 +172,7 @@ export default function AppointmentBookingScreen({ route, navigation }) {
         </View>
 
         <View style={styles.section}>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Text style={styles.sectionTitle}>{strings.reasonForVisit}</Text>
-            <SpeakButton text={strings.reasonForVisit} />
-          </View>
+          <Text style={styles.sectionTitle}>{strings.reasonForVisit}</Text>
           <TextInput
             style={styles.textInput}
             multiline
@@ -208,8 +198,9 @@ export default function AppointmentBookingScreen({ route, navigation }) {
           </>
         )}
 
-        <FloatingChatButton />
+        <SpeakButton textToRead="Appointment form with doctor, date, time and reason" />
       </ScrollView>
+      <FloatingChatButton />
     </SafeAreaView>
   );
 }
